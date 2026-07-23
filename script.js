@@ -1,0 +1,7 @@
+const header=document.querySelector('.site-header'),menu=document.querySelector('.menu'),nav=document.querySelector('#nav');
+addEventListener('scroll',()=>header.classList.toggle('scrolled',scrollY>30),{passive:true});
+menu.addEventListener('click',()=>{const open=menu.getAttribute('aria-expanded')==='true';menu.setAttribute('aria-expanded',String(!open));nav.classList.toggle('open',!open)});
+nav.addEventListener('click',e=>{if(e.target.matches('a')){nav.classList.remove('open');menu.setAttribute('aria-expanded','false')}});
+const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('visible');observer.unobserve(entry.target)}}),{threshold:.12});document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));
+const form=document.querySelector('.consultation');form.addEventListener('submit',e=>{e.preventDefault();const status=form.querySelector('.form-status');if(!form.checkValidity()){form.reportValidity();status.textContent='Please complete the required fields.';return}status.textContent='Thank you. Your consultation request is ready for the KDH team.';form.reset()});
+const cookie=document.querySelector('.cookie');if(!localStorage.getItem('kdh-cookie-choice'))cookie.hidden=false;cookie.addEventListener('click',e=>{const choice=e.target.dataset.cookie;if(choice){localStorage.setItem('kdh-cookie-choice',choice);cookie.hidden=true}});
