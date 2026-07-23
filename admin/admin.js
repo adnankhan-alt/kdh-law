@@ -45,7 +45,7 @@ async function initialise() {
 }
 
 window.addEventListener("message", (event) => {
-  if (event.origin !== window.location.origin || event.source !== frame.contentWindow) return;
+  if (event.origin !== window.location.origin) return;
   if (event.data?.type === "kdh:visual-ready") {
     visualReady = true;
     applyPublishedContent();
