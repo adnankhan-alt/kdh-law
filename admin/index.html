@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
-  <title>KDH Content Manager</title>
+  <title>KDH Visual Content Manager</title>
   <link rel="icon" type="image/png" href="/assets/kdh-favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,73 +12,56 @@
   <link rel="stylesheet" href="/admin/admin.css">
 </head>
 <body>
-  <header>
+  <section class="signin" id="signin">
     <img src="/assets/kdh-law-logo-transparent.png" alt="KDH Advocates LLP">
-    <div>
-      <span>Website administration</span>
-      <h1>Content manager</h1>
+    <p class="eyebrow">Secure visual editing</p>
+    <h1>Edit the website exactly as it appears.</h1>
+    <p>Sign in with the authorised GitHub account, select any text directly on the page, and publish through Vercel.</p>
+    <a class="primary" href="/api/cms/start">Continue with GitHub</a>
+  </section>
+
+  <div class="workspace" id="workspace" hidden>
+    <header class="toolbar">
+      <a class="brand" href="/" target="_blank" rel="noopener" aria-label="Open the live KDH website">
+        <img src="/assets/kdh-law-logo-transparent.png" alt="KDH Advocates LLP">
+      </a>
+      <div class="toolbar-title">
+        <span>Visual content manager</span>
+        <strong>Edit text directly on the page</strong>
+      </div>
+      <p id="identity"></p>
+      <p id="status" role="status" aria-live="polite"></p>
+      <button class="quiet" id="logout" type="button">Sign out</button>
+      <button class="primary" id="save" type="button">Save and publish</button>
+    </header>
+
+    <div class="editor-stage">
+      <div class="editor-note">
+        <b>Editing mode</b>
+        <span>Click highlighted text to type. Click an image or link to edit its details.</span>
+      </div>
+      <iframe id="site-frame" title="Editable KDH homepage" src="/?cms=visual"></iframe>
     </div>
-    <button class="quiet" id="logout" hidden>Sign out</button>
-  </header>
 
-  <main>
-    <section class="signin" id="signin">
-      <p class="eyebrow">Secure editing</p>
-      <h2>Manage the KDH website with your authorised GitHub account.</h2>
-      <p>Edits are versioned in GitHub and automatically published through Vercel.</p>
-      <a class="primary" href="/api/cms/start">Continue with GitHub</a>
-    </section>
-
-    <form id="editor" hidden>
-      <div class="editor-head">
+    <aside class="asset-panel" id="asset-panel" hidden>
+      <div class="asset-head">
         <div>
-          <p class="eyebrow">Homepage</p>
-          <h2>Published content</h2>
+          <span id="asset-kind">Selected item</span>
+          <strong id="asset-title">Edit details</strong>
         </div>
-        <p id="identity"></p>
+        <button id="asset-close" type="button" aria-label="Close editing panel">×</button>
       </div>
-
-      <fieldset>
-        <legend>Hero</legend>
-        <label>Eyebrow<input name="hero.eyebrow" required maxlength="120"></label>
-        <div class="pair">
-          <label>Heading<input name="hero.heading" required maxlength="90"></label>
-          <label>Italic accent<input name="hero.accent" required maxlength="90"></label>
-        </div>
-        <label>Introduction<textarea name="hero.introduction" required rows="4" maxlength="700"></textarea></label>
-      </fieldset>
-
-      <fieldset>
-        <legend>The firm</legend>
-        <div class="pair">
-          <label>Heading<input name="firm.heading" required maxlength="120"></label>
-          <label>Italic accent<input name="firm.accent" required maxlength="90"></label>
-        </div>
-        <label>First paragraph<textarea name="firm.paragraphOne" required rows="5" maxlength="1800"></textarea></label>
-        <label>Second paragraph<textarea name="firm.paragraphTwo" required rows="5" maxlength="1800"></textarea></label>
-      </fieldset>
-
-      <fieldset>
-        <legend>Contact</legend>
-        <div class="pair">
-          <label>Heading<input name="contact.heading" required maxlength="120"></label>
-          <label>Italic accent<input name="contact.accent" required maxlength="90"></label>
-        </div>
-        <label>Introduction<textarea name="contact.introduction" required rows="4" maxlength="900"></textarea></label>
-        <div class="pair">
-          <label>Email<input name="contact.email" type="email" required></label>
-          <label>Phone<input name="contact.phone" required maxlength="40"></label>
-        </div>
-        <label>Office address<input name="contact.office" required maxlength="240"></label>
-      </fieldset>
-
-      <div class="savebar">
-        <p id="status" role="status" aria-live="polite"></p>
-        <a href="/" target="_blank" rel="noopener">View website ↗</a>
-        <button class="primary" type="submit">Save and publish</button>
+      <div id="image-fields" hidden>
+        <label>Image URL or site path<input id="image-src" placeholder="/assets/example.webp"></label>
+        <label>Accessible description<textarea id="image-alt" rows="3"></textarea></label>
+        <button class="primary" id="image-apply" type="button">Apply image</button>
       </div>
-    </form>
-  </main>
+      <div id="link-fields" hidden>
+        <label>Link destination<input id="link-href" placeholder="https://example.com or #section"></label>
+        <button class="primary" id="link-apply" type="button">Apply link</button>
+      </div>
+    </aside>
+  </div>
   <script src="/admin/admin.js"></script>
 </body>
 </html>

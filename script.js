@@ -496,30 +496,214 @@ if (cookie) {
   });
 }
 
-// Published copy is kept in a Git-backed content file so authorised editors can
-// update key homepage text without editing HTML.
+// Published copy is kept in Git-backed content files. The visual editor uses
+// stable DOM keys so every visible text fragment, image, and link can be edited
+// while the public HTML remains a resilient fallback.
 const readPath = (object, path) =>
   path.split(".").reduce((value, key) => value?.[key], object);
 
-fetch("/content/site.json", { cache: "no-store" })
-  .then((response) => {
-    if (!response.ok) throw new Error("Content unavailable");
-    return response.json();
-  })
-  .then((content) => {
-    document.querySelectorAll("[data-cms]").forEach((element) => {
-      const value = readPath(content, element.dataset.cms);
-      if (typeof value !== "string") return;
-      element.textContent = value;
+const visualMode = new URLSearchParams(window.location.search).get("cms") === "visual";
 
-      if (element.dataset.cms === "contact.email") {
-        element.href = `mailto:${value}`;
-      }
-      if (element.dataset.cms === "contact.phone") {
-        element.href = `tel:${value.replace(/[^\d+]/g, "")}`;
+function elementKey(element) {
+  if (element.dataset.cms) return `cms:${element.dataset.cms}`;
+  if (element.id) return `#${element.id}`;
+
+  const parts = [];
+  let current = element;
+  while (current && current !== document.body) {
+    const parent = current.parentElement;
+    if (!parent) break;
+    const siblings = [...parent.children].filter((child) => child.tagName === current.tagName);
+    parts.unshift(`${current.tagName.toLowerCase()}:nth-of-type(${siblings.indexOf(current) + 1})`);
+    if (parent.id) {
+      parts.unshift(`#${parent.id}`);
+      break;
+    }
+    current = parent;
+  }
+  return parts.join(">");
+}
+
+function editableTextNodes() {
+  const nodes = [];
+  const excluded = "script,style,noscript,textarea,select,option,.scroll-guide,[aria-hidden='true']";
+
+  const visit = (element) => {
+    if (element.matches?.(excluded)) return;
+    let textIndex = 0;
+    element.childNodes.forEach((node) => {
+      if (node.nodeType === Node.TEXT_NODE) {
+        if (node.nodeValue.trim()) {
+          nodes.push({
+            key: `${elementKey(element)}::text-${textIndex}`,
+            node,
+            element
+          });
+        }
+        textIndex += 1;
+      } else if (node.nodeType === Node.ELEMENT_NODE) {
+        visit(node);
       }
     });
-  })
-  .catch(() => {
-    // The carefully authored HTML remains the fallback if content cannot load.
+  };
+
+  visit(document.body);
+  return nodes;
+}
+
+function relativeAssetUrl(value) {
+  try {
+    const url = new URL(value, window.location.href);
+    return url.origin === window.location.origin
+      ? `${url.pathname}${url.search}${url.hash}`
+      : url.href;
+  } catch {
+    return value;
+  }
+}
+
+function applyVisualContent(content) {
+  if (!content || typeof content !== "object") return;
+  const text = content.text || {};
+  editableTextNodes().forEach(({ key, node }) => {
+    if (typeof text[key] === "string") node.nodeValue = text[key];
   });
+
+  const images = content.images || {};
+  document.querySelectorAll("img").forEach((image) => {
+    const value = images[elementKey(image)];
+    if (!value) return;
+    if (typeof value.src === "string" && value.src) image.src = value.src;
+    if (typeof value.alt === "string") image.alt = value.alt;
+  });
+
+  const links = content.links || {};
+  document.querySelectorAll("a[href]").forEach((link) => {
+    const value = links[elementKey(link)];
+    if (typeof value === "string" && value) link.setAttribute("href", value);
+  });
+}
+
+function enableVisualEditor() {
+  document.documentElement.classList.add("visual-cms-mode");
+  const style = document.createElement("style");
+  style.textContent = `
+    .visual-cms-mode * { animation-duration: 0s !important; transition-duration: .12s !important; }
+    .visual-cms-mode .reveal { opacity: 1 !important; transform: none !important; }
+    .visual-cms-text { border-radius: 3px; cursor: text; outline: 1px dashed transparent; }
+    .visual-cms-text:hover { outline-color: #d7ac27; background: rgba(215,172,39,.14); }
+    .visual-cms-text:focus { outline: 2px solid #d7ac27; background: rgba(255,255,255,.94); color: #0c1730; }
+    .visual-cms-mode img[data-visual-key],
+    .visual-cms-mode a[data-visual-key] { cursor: pointer; }
+    .visual-cms-mode img[data-visual-key]:hover { outline: 3px solid #d7ac27; outline-offset: -3px; }
+  `;
+  document.head.appendChild(style);
+
+  editableTextNodes().forEach(({ key, node }) => {
+    const span = document.createElement("span");
+    span.className = "visual-cms-text";
+    span.dataset.visualKey = key;
+    span.contentEditable = "true";
+    span.spellcheck = true;
+    span.textContent = node.nodeValue;
+    node.replaceWith(span);
+  });
+
+  document.querySelectorAll("img").forEach((image) => {
+    image.dataset.visualKey = elementKey(image);
+  });
+  document.querySelectorAll("a[href]").forEach((link) => {
+    link.dataset.visualKey = elementKey(link);
+  });
+
+  document.addEventListener("click", (event) => {
+    const image = event.target.closest("img[data-visual-key]");
+    const link = event.target.closest("a[data-visual-key]");
+    if (link) event.preventDefault();
+    if (image) {
+      window.parent.postMessage({
+        type: "kdh:image-selected",
+        key: image.dataset.visualKey,
+        src: relativeAssetUrl(image.src),
+        alt: image.alt
+      }, window.location.origin);
+    } else if (link && !event.target.closest("[contenteditable='true']")) {
+      window.parent.postMessage({
+        type: "kdh:link-selected",
+        key: link.dataset.visualKey,
+        href: link.getAttribute("href")
+      }, window.location.origin);
+    }
+  }, true);
+  document.querySelectorAll("form").forEach((editableForm) => {
+    editableForm.addEventListener("submit", (event) => event.preventDefault());
+  });
+}
+
+function exportVisualContent() {
+  const text = {};
+  document.querySelectorAll(".visual-cms-text[data-visual-key]").forEach((span) => {
+    text[span.dataset.visualKey] = span.textContent;
+  });
+
+  const images = {};
+  document.querySelectorAll("img[data-visual-key]").forEach((image) => {
+    images[image.dataset.visualKey] = {
+      src: relativeAssetUrl(image.src),
+      alt: image.alt
+    };
+  });
+
+  const links = {};
+  document.querySelectorAll("a[data-visual-key][href]").forEach((link) => {
+    links[link.dataset.visualKey] = link.getAttribute("href");
+  });
+  return { version: 1, text, images, links };
+}
+
+window.KDHVisualEditor = {
+  applyContent: applyVisualContent,
+  exportContent: exportVisualContent,
+  updateImage(key, value) {
+    const image = [...document.querySelectorAll("img[data-visual-key]")]
+      .find((item) => item.dataset.visualKey === key);
+    if (!image) return;
+    if (value.src) image.src = value.src;
+    image.alt = value.alt || "";
+  },
+  updateLink(key, href) {
+    const link = [...document.querySelectorAll("a[data-visual-key]")]
+      .find((item) => item.dataset.visualKey === key);
+    if (link && href) link.setAttribute("href", href);
+  }
+};
+
+async function loadManagedContent() {
+  try {
+    const siteResponse = await fetch("/content/site.json", { cache: "no-store" });
+    if (siteResponse.ok) {
+      const siteContent = await siteResponse.json();
+      document.querySelectorAll("[data-cms]").forEach((element) => {
+        const value = readPath(siteContent, element.dataset.cms);
+        if (typeof value !== "string") return;
+        element.textContent = value;
+        if (element.dataset.cms === "contact.email") element.href = `mailto:${value}`;
+        if (element.dataset.cms === "contact.phone") {
+          element.href = `tel:${value.replace(/[^\d+]/g, "")}`;
+        }
+      });
+    }
+
+    const pageResponse = await fetch("/content/page.json", { cache: "no-store" });
+    if (pageResponse.ok) applyVisualContent(await pageResponse.json());
+  } catch {
+    // The carefully authored HTML remains the fallback if content cannot load.
+  }
+
+  if (visualMode) {
+    enableVisualEditor();
+    window.parent.postMessage({ type: "kdh:visual-ready" }, window.location.origin);
+  }
+}
+
+loadManagedContent();

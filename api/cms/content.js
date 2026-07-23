@@ -1,7 +1,7 @@
 const { session } = require("../_lib/session");
 
 const defaultRepo = "adnankhan-alt/kdh-law";
-const contentPath = "content/site.json";
+const contentPath = "content/page.json";
 
 function githubHeaders(token) {
   return {
@@ -13,27 +13,42 @@ function githubHeaders(token) {
   };
 }
 
+function validStringMap(value, maxEntries, maxLength) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const entries = Object.entries(value);
+  return entries.length <= maxEntries && entries.every(([key, item]) =>
+    typeof key === "string" &&
+    key.length > 0 &&
+    key.length < 600 &&
+    typeof item === "string" &&
+    item.length <= maxLength
+  );
+}
+
+function validImageMap(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const entries = Object.entries(value);
+  return entries.length <= 150 && entries.every(([key, item]) =>
+    typeof key === "string" &&
+    key.length > 0 &&
+    key.length < 600 &&
+    item &&
+    typeof item === "object" &&
+    typeof item.src === "string" &&
+    item.src.length <= 1200 &&
+    typeof item.alt === "string" &&
+    item.alt.length <= 500
+  );
+}
+
 function validContent(value) {
-  const required = [
-    "hero.eyebrow",
-    "hero.heading",
-    "hero.accent",
-    "hero.introduction",
-    "firm.heading",
-    "firm.accent",
-    "firm.paragraphOne",
-    "firm.paragraphTwo",
-    "contact.heading",
-    "contact.accent",
-    "contact.introduction",
-    "contact.email",
-    "contact.phone",
-    "contact.office"
-  ];
-  return required.every((path) => {
-    const result = path.split(".").reduce((current, key) => current?.[key], value);
-    return typeof result === "string" && result.trim().length > 0 && result.length < 3000;
-  });
+  return Boolean(
+    value &&
+    value.version === 1 &&
+    validStringMap(value.text, 1200, 5000) &&
+    validImageMap(value.images) &&
+    validStringMap(value.links, 300, 1600)
+  );
 }
 
 module.exports = async function handler(req, res) {
