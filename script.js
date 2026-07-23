@@ -596,6 +596,8 @@ function enableVisualEditor() {
     .visual-cms-mode img[data-visual-key],
     .visual-cms-mode a[data-visual-key] { cursor: pointer; }
     .visual-cms-mode img[data-visual-key]:hover { outline: 3px solid #d7ac27; outline-offset: -3px; }
+    .visual-cms-mode .hero-shade,
+    .visual-cms-mode .contact-overlay { pointer-events: none !important; }
   `;
   document.head.appendChild(style);
 
