@@ -58,7 +58,7 @@ function bindFrameAssetSelection() {
     const image = event.target.closest?.("img[data-visual-key]");
     const link = event.target.closest?.("a[data-visual-key]");
     if (image) showImageEditor(image);
-    if (link && !event.target.closest?.("[contenteditable='true']")) {
+    if (link && (event.shiftKey || !event.target.closest?.("[contenteditable='true']"))) {
       event.preventDefault();
       showLinkEditor(link);
     }

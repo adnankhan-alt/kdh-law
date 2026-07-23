@@ -629,7 +629,7 @@ function enableVisualEditor() {
         src: relativeAssetUrl(image.src),
         alt: image.alt
       }, window.location.origin);
-    } else if (link && !event.target.closest("[contenteditable='true']")) {
+    } else if (link && (event.shiftKey || !event.target.closest("[contenteditable='true']"))) {
       window.parent.postMessage({
         type: "kdh:link-selected",
         key: link.dataset.visualKey,
