@@ -29,6 +29,42 @@ function applyPublishedContent() {
   frame.contentWindow.KDHVisualEditor?.applyContent(publishedContent);
 }
 
+function showImageEditor(image) {
+  selectedAsset = { type: "image", key: image.dataset.visualKey };
+  assetKind.textContent = "Image";
+  assetTitle.textContent = "Edit image";
+  imageSrc.value = image.getAttribute("src") || "";
+  imageAlt.value = image.alt || "";
+  imageFields.hidden = false;
+  linkFields.hidden = true;
+  assetPanel.hidden = false;
+}
+
+function showLinkEditor(link) {
+  selectedAsset = { type: "link", key: link.dataset.visualKey };
+  assetKind.textContent = "Link";
+  assetTitle.textContent = "Edit destination";
+  linkHref.value = link.getAttribute("href") || "";
+  imageFields.hidden = true;
+  linkFields.hidden = false;
+  assetPanel.hidden = false;
+}
+
+function bindFrameAssetSelection() {
+  const documentElement = frame.contentDocument?.documentElement;
+  if (!documentElement || documentElement.dataset.assetEditorBound) return;
+  documentElement.dataset.assetEditorBound = "true";
+  frame.contentDocument.addEventListener("click", (event) => {
+    const image = event.target.closest?.("img[data-visual-key]");
+    const link = event.target.closest?.("a[data-visual-key]");
+    if (image) showImageEditor(image);
+    if (link && !event.target.closest?.("[contenteditable='true']")) {
+      event.preventDefault();
+      showLinkEditor(link);
+    }
+  }, true);
+}
+
 async function initialise() {
   try {
     const auth = await request("/api/cms/auth");
@@ -49,26 +85,18 @@ window.addEventListener("message", (event) => {
   if (event.data?.type === "kdh:visual-ready") {
     visualReady = true;
     applyPublishedContent();
+    bindFrameAssetSelection();
     status.textContent = "Ready to edit";
   }
   if (event.data?.type === "kdh:image-selected") {
-    selectedAsset = { type: "image", key: event.data.key };
-    assetKind.textContent = "Image";
-    assetTitle.textContent = "Edit image";
-    imageSrc.value = event.data.src || "";
-    imageAlt.value = event.data.alt || "";
-    imageFields.hidden = false;
-    linkFields.hidden = true;
-    assetPanel.hidden = false;
+    const image = [...frame.contentDocument.querySelectorAll("img[data-visual-key]")]
+      .find((item) => item.dataset.visualKey === event.data.key);
+    if (image) showImageEditor(image);
   }
   if (event.data?.type === "kdh:link-selected") {
-    selectedAsset = { type: "link", key: event.data.key };
-    assetKind.textContent = "Link";
-    assetTitle.textContent = "Edit destination";
-    linkHref.value = event.data.href || "";
-    imageFields.hidden = true;
-    linkFields.hidden = false;
-    assetPanel.hidden = false;
+    const link = [...frame.contentDocument.querySelectorAll("a[data-visual-key]")]
+      .find((item) => item.dataset.visualKey === event.data.key);
+    if (link) showLinkEditor(link);
   }
 });
 
