@@ -2,10 +2,27 @@ const root = document.documentElement;
 const header = document.querySelector("[data-header], .site-header");
 const menu = document.querySelector(".menu");
 const nav = document.querySelector("#nav");
-const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const motionPreference = window.matchMedia("(prefers-reduced-motion: reduce)");
+let reduceMotion = motionPreference.matches;
 const headerAlwaysScrolled = header?.classList.contains("scrolled") || false;
 
 root.classList.add("motion-ready", "scroll-enhanced");
+
+motionPreference.addEventListener?.("change", (event) => {
+  reduceMotion = event.matches;
+});
+
+const anchorGap = () => Math.min(24, Math.max(16, window.innerHeight * 0.02));
+const syncAnchorOffset = () => {
+  const headerHeight = Math.ceil(header?.getBoundingClientRect().height || 0);
+  root.style.setProperty("--anchor-offset", `${headerHeight + anchorGap()}px`);
+};
+
+if (header && "ResizeObserver" in window) {
+  new ResizeObserver(syncAnchorOffset).observe(header);
+}
+window.addEventListener("resize", syncAnchorOffset, { passive: true });
+syncAnchorOffset();
 
 // Minimal page-position control.
 const scrollGuide = document.createElement("div");
@@ -73,6 +90,7 @@ scrollPill.addEventListener("pointerdown", (event) => {
   dragging = true;
   dragStartY = event.clientY;
   dragStartScroll = window.scrollY;
+  root.classList.add("scroll-dragging");
   scrollPill.setPointerCapture(event.pointerId);
   scrollPill.classList.add("is-dragging");
   event.preventDefault();
@@ -88,6 +106,7 @@ scrollPill.addEventListener("pointermove", (event) => {
 const endDrag = (event) => {
   if (!dragging) return;
   dragging = false;
+  root.classList.remove("scroll-dragging");
   scrollPill.classList.remove("is-dragging");
   if (scrollPill.hasPointerCapture(event.pointerId)) {
     scrollPill.releasePointerCapture(event.pointerId);
@@ -116,17 +135,164 @@ scrollPill.addEventListener("keydown", (event) => {
 });
 
 // Mobile navigation.
+const closeMenu = () => {
+  nav?.classList.remove("open");
+  menu?.setAttribute("aria-expanded", "false");
+};
+
 menu?.addEventListener("click", () => {
   const open = menu.getAttribute("aria-expanded") === "true";
   menu.setAttribute("aria-expanded", String(!open));
   nav?.classList.toggle("open", !open);
 });
 
-nav?.addEventListener("click", (event) => {
-  if (!event.target.closest("a")) return;
-  nav.classList.remove("open");
-  menu?.setAttribute("aria-expanded", "false");
+const targetFromHash = (hash) => {
+  if (!hash || hash === "#") return null;
+  try {
+    return document.getElementById(decodeURIComponent(hash.slice(1)));
+  } catch {
+    return null;
+  }
+};
+
+const prepareLanding = (target) => {
+  const section = target.closest("section") || target;
+  const candidates = [
+    target,
+    section.querySelector?.(".hero-copy"),
+    section.querySelector?.(".section-label"),
+    section.querySelector?.(".section-heading"),
+    section.querySelector?.(".contact-copy"),
+    section.querySelector?.(".consultation"),
+    target.matches?.(".standards-intro") ? target.querySelector(".section-heading") : null,
+    target.matches?.(".contact-copy") ? target : null
+  ];
+
+  candidates.forEach((item) => item?.classList.add("visible"));
+};
+
+const focusLanding = (target) => {
+  if (!target.hasAttribute("tabindex")) target.setAttribute("tabindex", "-1");
+  target.focus({ preventScroll: true });
+};
+
+const landingTop = (target) => {
+  if (target.id === "top") return 0;
+  const headerHeight = Math.ceil(header?.getBoundingClientRect().height || 0);
+  return Math.max(
+    0,
+    target.getBoundingClientRect().top + window.scrollY - headerHeight - anchorGap()
+  );
+};
+
+let anchorSettleTimer = 0;
+let anchorScrollEndHandler = null;
+const settleLanding = (target) => {
+  window.clearTimeout(anchorSettleTimer);
+  if (anchorScrollEndHandler) {
+    window.removeEventListener("scrollend", anchorScrollEndHandler);
+  }
+
+  const settle = () => {
+    anchorScrollEndHandler = null;
+    const top = landingTop(target);
+    if (Math.abs(window.scrollY - top) > 1) {
+      window.scrollTo({ top, behavior: "auto" });
+    }
+  };
+
+  if ("onscrollend" in window) {
+    anchorScrollEndHandler = () => {
+      window.clearTimeout(anchorSettleTimer);
+      settle();
+    };
+    window.addEventListener("scrollend", anchorScrollEndHandler, { once: true });
+    anchorSettleTimer = window.setTimeout(() => {
+      window.removeEventListener("scrollend", anchorScrollEndHandler);
+      settle();
+    }, 2200);
+  } else {
+    anchorSettleTimer = window.setTimeout(settle, 1100);
+  }
+};
+
+const scrollToHash = (hash, { behavior, focus = false, historyMode = null } = {}) => {
+  const target = targetFromHash(hash);
+  if (!target) return false;
+
+  closeMenu();
+  prepareLanding(target);
+
+  window.requestAnimationFrame(() => {
+    syncAnchorOffset();
+    window.scrollTo({
+      top: landingTop(target),
+      behavior: behavior || (reduceMotion ? "auto" : "smooth")
+    });
+    settleLanding(target);
+
+    if (historyMode === "push" && window.location.hash !== hash) {
+      window.history.pushState(null, "", hash);
+    } else if (historyMode === "replace") {
+      window.history.replaceState(null, "", hash);
+    }
+
+    if (focus) focusLanding(target);
+  });
+
+  return true;
+};
+
+document.querySelectorAll('a[href^="#"]').forEach((link) => {
+  link.addEventListener("click", (event) => {
+    if (
+      event.defaultPrevented ||
+      event.button !== 0 ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey
+    ) {
+      return;
+    }
+
+    const hash = link.getAttribute("href");
+    if (!targetFromHash(hash)) return;
+
+    event.preventDefault();
+    closeMenu();
+    window.requestAnimationFrame(() => {
+      scrollToHash(hash, {
+        behavior: link.classList.contains("skip") || reduceMotion ? "auto" : "smooth",
+        focus: link.classList.contains("skip") || event.detail === 0,
+        historyMode: "push"
+      });
+    });
+  });
 });
+
+let hashAlignmentFrame = 0;
+const queueHashAlignment = () => {
+  if (!window.location.hash) return;
+  window.cancelAnimationFrame(hashAlignmentFrame);
+  hashAlignmentFrame = window.requestAnimationFrame(() => {
+    scrollToHash(window.location.hash, { behavior: "auto" });
+  });
+};
+
+window.addEventListener("popstate", queueHashAlignment);
+window.addEventListener("hashchange", queueHashAlignment);
+window.addEventListener(
+  "load",
+  async () => {
+    try {
+      await document.fonts?.ready;
+    } finally {
+      queueHashAlignment();
+    }
+  },
+  { once: true }
+);
 
 // Staggered, once-only reveal motion.
 const revealGroups = [
@@ -208,8 +374,11 @@ if (counters.length) {
 const navigationLinks = [...document.querySelectorAll('#nav a[href^="#"]')];
 const sectionMap = new Map(
   navigationLinks
-    .map((link) => [document.querySelector(link.getAttribute("href")), link])
-    .filter(([section]) => section)
+    .map((link) => {
+      const target = targetFromHash(link.getAttribute("href"));
+      return [target?.closest("section") || target, link];
+    })
+    .filter(([section]) => Boolean(section))
 );
 
 if (sectionMap.size && "IntersectionObserver" in window) {
@@ -226,6 +395,24 @@ if (sectionMap.size && "IntersectionObserver" in window) {
   );
   sectionMap.forEach((_, section) => activeObserver.observe(section));
 }
+
+// Keep an opened practice heading below the fixed header after layout shifts.
+document.querySelectorAll(".practice-item").forEach((item) => {
+  item.addEventListener("toggle", () => {
+    if (!item.open) return;
+    window.requestAnimationFrame(() => {
+      const summary = item.querySelector("summary");
+      if (!summary) return;
+      const safeTop = Math.ceil(header?.getBoundingClientRect().height || 0) + anchorGap();
+      const bounds = summary.getBoundingClientRect();
+      if (bounds.top >= safeTop) return;
+      window.scrollTo({
+        top: Math.max(0, window.scrollY + bounds.top - safeTop),
+        behavior: reduceMotion ? "auto" : "smooth"
+      });
+    });
+  });
+});
 
 // Accessible team-profile dialogs.
 document.querySelectorAll(".profile-open").forEach((button) => {

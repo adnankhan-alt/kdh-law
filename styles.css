@@ -15,6 +15,9 @@
   --shadow: 0 24px 70px rgba(0, 12, 51, 0.16);
   --max: 1360px;
   --section-x: max(5vw, 1.4rem);
+  --header-height: 88px;
+  --anchor-gap: clamp(16px, 2vh, 24px);
+  --anchor-offset: calc(var(--header-height) + var(--anchor-gap));
 }
 
 * {
@@ -23,7 +26,7 @@
 
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: 92px;
+  scroll-padding-top: var(--anchor-offset);
 }
 
 body {
@@ -129,6 +132,11 @@ h2 em {
 .section {
   width: 100%;
   padding: clamp(6.5rem, 10vw, 10rem) var(--section-x);
+}
+
+.nav-landing {
+  scroll-snap-align: start;
+  scroll-snap-stop: normal;
 }
 
 .section > * {
@@ -248,16 +256,15 @@ h2 em {
   z-index: 90;
   inset: 0 0 auto;
   display: flex;
-  min-height: 88px;
+  height: var(--header-height);
   align-items: center;
   justify-content: space-between;
-  padding: 0.65rem var(--section-x);
+  padding: 0.5rem var(--section-x);
   color: var(--white);
-  transition: min-height 0.35s ease, color 0.35s ease, background 0.35s ease, box-shadow 0.35s ease;
+  transition: color 0.35s ease, background 0.35s ease, box-shadow 0.35s ease;
 }
 
 .site-header.scrolled {
-  min-height: 74px;
   background: rgba(255, 255, 255, 0.95);
   box-shadow: 0 1px 0 rgba(0, 23, 89, 0.1);
   color: var(--navy);
@@ -632,7 +639,7 @@ h2 em {
 
 .choice-image {
   position: relative;
-  min-height: 920px;
+  min-height: clamp(560px, calc(100svh - var(--header-height)), 820px);
   overflow: hidden;
 }
 
@@ -770,7 +777,7 @@ h2 em {
 
 .reach-visual {
   position: relative;
-  min-height: 820px;
+  min-height: clamp(560px, calc(100svh - var(--header-height)), 820px);
   overflow: hidden;
 }
 
@@ -1115,11 +1122,14 @@ h2 em {
 /* Profile dialogs */
 
 .profile-dialog {
+  position: fixed;
   width: min(1120px, calc(100% - 2rem));
-  max-height: min(90vh, 920px);
+  height: min(920px, calc(100dvh - 2rem));
+  max-height: calc(100dvh - 2rem);
   margin: auto;
   padding: 0;
   border: 0;
+  overflow: hidden;
   background: var(--white);
   color: var(--ink);
   box-shadow: 0 40px 120px rgba(0, 12, 51, 0.45);
@@ -1136,13 +1146,13 @@ h2 em {
 }
 
 .dialog-close {
-  position: sticky;
+  position: absolute;
   z-index: 3;
   top: 0.9rem;
-  float: right;
+  right: 0.9rem;
   width: 44px;
   height: 44px;
-  margin: 0.9rem 0.9rem -3.7rem 0;
+  margin: 0;
   border: 0;
   border-radius: 50%;
   background: var(--navy);
@@ -1154,11 +1164,16 @@ h2 em {
 
 .dialog-grid {
   display: grid;
+  height: min(920px, calc(100dvh - 2rem));
   grid-template-columns: minmax(300px, 0.75fr) minmax(0, 1.25fr);
+  grid-template-rows: minmax(0, 1fr);
+  min-height: 0;
 }
 
 .dialog-person {
+  min-height: 0;
   padding: 2rem;
+  overflow-y: auto;
   background: var(--navy);
   color: var(--white);
 }
@@ -1190,6 +1205,7 @@ h2 em {
 }
 
 .dialog-bio {
+  min-height: 0;
   padding: clamp(3rem, 6vw, 6rem);
   color: var(--slate);
   overflow-y: auto;
@@ -1404,7 +1420,7 @@ h2 em {
 
 .contact {
   position: relative;
-  min-height: 900px;
+  min-height: max(100svh, 760px);
   overflow: hidden;
   background: var(--navy-deep);
   color: var(--white);
@@ -1432,7 +1448,7 @@ h2 em {
   position: relative;
   z-index: 2;
   display: grid;
-  min-height: 900px;
+  min-height: max(100svh, 760px);
   grid-template-columns: minmax(0, 0.9fr) minmax(430px, 0.72fr);
   gap: clamp(3rem, 8vw, 8rem);
   align-items: center;
@@ -1863,13 +1879,129 @@ footer > * {
   }
 }
 
-@media (max-width: 900px) {
-  html {
-    scroll-padding-top: 76px;
+@media (min-width: 901px) and (max-height: 820px) {
+  :root {
+    --header-height: 72px;
   }
 
-  .site-header {
-    min-height: 74px;
+  .brand-logo {
+    width: 80px;
+    height: 56px;
+  }
+
+  .hero-copy {
+    padding-top: 5.8rem;
+    padding-bottom: 1.4rem;
+  }
+
+  .hero-copy h1 {
+    margin-bottom: 1rem;
+    font-size: clamp(3.3rem, 5vw, 5.3rem);
+  }
+
+  .hero-lead {
+    max-width: 640px;
+    font-size: 0.96rem;
+    line-height: 1.55;
+  }
+
+  .actions {
+    margin-top: 0.8rem;
+  }
+
+  .btn {
+    min-height: 50px;
+    padding: 0.8rem 1.1rem;
+  }
+
+  .hero-metrics {
+    margin-top: 1.3rem;
+    padding-top: 1.25rem;
+  }
+
+  .hero-metrics strong {
+    font-size: 2.25rem;
+  }
+
+  .hero-card {
+    bottom: 3.7rem;
+    width: 210px;
+    padding: 1rem;
+  }
+
+  .hero-card span {
+    margin-bottom: 0.55rem;
+  }
+
+  .hero-card b {
+    font-size: 1.7rem;
+  }
+
+  .hero-caption {
+    bottom: 1.1rem;
+  }
+
+  .section {
+    padding-top: clamp(5rem, 10vh, 6.5rem);
+    padding-bottom: clamp(5rem, 10vh, 6.5rem);
+  }
+
+  .section-label {
+    margin-bottom: clamp(2.25rem, 6vh, 4rem);
+  }
+}
+
+@media (min-width: 901px) and (max-height: 680px) {
+  .hero-copy {
+    padding-top: 4.8rem;
+    padding-bottom: 1rem;
+  }
+
+  .hero-copy h1 {
+    margin-bottom: 0.75rem;
+    font-size: clamp(3rem, 4.4vw, 4.7rem);
+  }
+
+  .hero-lead {
+    font-size: 0.9rem;
+  }
+
+  .hero-metrics {
+    margin-top: 0.8rem;
+    padding-top: 0.8rem;
+  }
+
+  .hero-metrics strong {
+    font-size: 1.9rem;
+  }
+
+  .hero-metrics span {
+    font-size: 0.56rem;
+  }
+
+  .hero-card {
+    bottom: 3.1rem;
+  }
+}
+
+@media (max-width: 1024px) {
+  .people {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .contact,
+  .contact-inner {
+    min-height: 0;
+  }
+
+  .contact-inner {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  :root {
+    --header-height: 76px;
   }
 
   .brand-logo {
@@ -1884,24 +2016,31 @@ footer > * {
 
   .site-header nav {
     position: fixed;
-    z-index: -1;
-    inset: 74px 0 auto;
+    z-index: 0;
+    inset: var(--header-height) 0 auto;
     display: flex;
     max-height: 0;
     flex-direction: column;
     gap: 0;
     align-items: stretch;
     overflow: hidden;
+    overscroll-behavior: contain;
     background: var(--white);
     color: var(--navy);
     box-shadow: 0 18px 40px rgba(0, 12, 51, 0.16);
     opacity: 0;
-    transition: max-height 0.38s ease, opacity 0.28s ease;
+    visibility: hidden;
+    pointer-events: none;
+    transition: max-height 0.38s ease, opacity 0.28s ease, visibility 0s linear 0.38s;
   }
 
   .site-header nav.open {
-    max-height: 520px;
+    max-height: calc(100dvh - var(--header-height));
+    overflow-y: auto;
     opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition-delay: 0s;
   }
 
   .site-header nav a {
@@ -1965,7 +2104,7 @@ footer > * {
   }
 
   .choice-image {
-    min-height: 62svh;
+    min-height: clamp(440px, 62svh, 600px);
   }
 
   .choice-copy {
@@ -1977,7 +2116,7 @@ footer > * {
   }
 
   .reach-visual {
-    min-height: 62svh;
+    min-height: clamp(440px, 62svh, 600px);
   }
 
   .practice-detail {
@@ -1994,11 +2133,37 @@ footer > * {
   }
 
   .dialog-grid {
+    height: auto;
+    max-height: none;
     grid-template-columns: 1fr;
+    grid-template-rows: auto;
+  }
+
+  .profile-dialog {
+    height: auto;
+    max-height: calc(100dvh - 1rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .dialog-close {
+    position: sticky;
+    top: 0.6rem;
+    right: auto;
+    float: right;
+    margin: 0.6rem 0.6rem -3.35rem 0;
   }
 
   .dialog-person img {
     width: min(100%, 430px);
+  }
+
+  .dialog-person {
+    overflow: visible;
+  }
+
+  .dialog-bio {
+    overflow: visible;
   }
 
   .principles {
@@ -2085,7 +2250,7 @@ footer > * {
   }
 
   .purpose-card {
-    min-height: 330px;
+    min-height: 0;
   }
 
   .value-grid,
@@ -2097,6 +2262,14 @@ footer > * {
   .reason-list li {
     grid-template-columns: 1fr;
     gap: 0.35rem;
+  }
+
+  .industry-grid article {
+    min-height: 0;
+  }
+
+  .industry-grid h3 {
+    margin-top: 2.5rem;
   }
 
   .reach-number strong {
@@ -2122,7 +2295,7 @@ footer > * {
 
   .profile-dialog {
     width: calc(100% - 1rem);
-    max-height: 94vh;
+    max-height: calc(100dvh - 1rem);
   }
 
   .dialog-person,
@@ -2183,6 +2356,67 @@ footer > * {
   .scroll-pill {
     width: 4px;
     height: 34px;
+  }
+}
+
+@media (max-width: 640px) and (max-height: 760px) {
+  h1 {
+    font-size: clamp(2.8rem, 12vw, 3.5rem);
+  }
+
+  h2 {
+    font-size: clamp(2.25rem, 10vw, 3.35rem);
+  }
+
+  .section {
+    padding-top: 5rem;
+    padding-bottom: 5rem;
+  }
+
+  .section-label {
+    margin-bottom: 2.5rem;
+  }
+
+  .hero-copy {
+    min-height: 100svh;
+    padding-top: 6rem;
+    padding-bottom: 1.2rem;
+  }
+
+  .hero-copy h1 {
+    margin-bottom: 1rem;
+  }
+
+  .hero-lead {
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+
+  .actions {
+    margin-top: 0.75rem;
+  }
+
+  .actions .btn {
+    min-height: 50px;
+  }
+
+  .hero-metrics {
+    margin-top: 1rem;
+    padding-top: 1rem;
+  }
+
+  .hero-metrics strong {
+    font-size: 1.9rem;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-snap-type: y proximity;
+  }
+
+  html.scroll-dragging {
+    scroll-snap-type: none;
   }
 }
 
