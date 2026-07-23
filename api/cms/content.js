@@ -1,4 +1,5 @@
 const { session } = require("../_lib/session");
+const { put } = require("@vercel/blob");
 
 const defaultRepo = "adnankhan-alt/kdh-law";
 const contentPath = "content/page.json";
@@ -98,9 +99,25 @@ module.exports = async function handler(req, res) {
     });
   }
 
+  try {
+    await put(
+      `kdh/page-${updated.commit.sha}.json`,
+      `${JSON.stringify(req.body.content, null, 2)}\n`,
+      {
+        access: "private",
+        addRandomSuffix: false,
+        contentType: "application/json"
+      }
+    );
+  } catch {
+    return res.status(502).json({
+      error: "The content was versioned in GitHub but could not be published live. Please try saving again."
+    });
+  }
+
   return res.status(200).json({
     saved: true,
     commit: updated.commit?.sha,
-    message: "Saved. Vercel is publishing the new content."
+    message: "Saved and published live."
   });
 };

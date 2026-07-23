@@ -694,7 +694,10 @@ async function loadManagedContent() {
       });
     }
 
-    const pageResponse = await fetch("/content/page.json", { cache: "no-store" });
+    let pageResponse = await fetch("/api/page-content", { cache: "no-store" });
+    if (!pageResponse.ok) {
+      pageResponse = await fetch("/content/page.json", { cache: "no-store" });
+    }
     if (pageResponse.ok) applyVisualContent(await pageResponse.json());
   } catch {
     // The carefully authored HTML remains the fallback if content cannot load.
