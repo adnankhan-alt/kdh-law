@@ -1,1 +1,17 @@
-{"cleanUrls":true,"trailingSlash":false}
+{
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "kdhadvocates.com"
+        }
+      ],
+      "destination": "https://www.kdhadvocates.com/$1",
+      "permanent": true
+    }
+  ]
+}

@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>KDH Content Manager</title>
+  <link rel="icon" type="image/png" href="../assets/kdh-favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;1,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+  <header>
+    <img src="../assets/kdh-law-logo-transparent.png" alt="KDH Advocates LLP">
+    <div>
+      <span>Website administration</span>
+      <h1>Content manager</h1>
+    </div>
+    <button class="quiet" id="logout" hidden>Sign out</button>
+  </header>
+
+  <main>
+    <section class="signin" id="signin">
+      <p class="eyebrow">Secure editing</p>
+      <h2>Manage the KDH website with your authorised GitHub account.</h2>
+      <p>Edits are versioned in GitHub and automatically published through Vercel.</p>
+      <a class="primary" href="/api/cms/start">Continue with GitHub</a>
+    </section>
+
+    <form id="editor" hidden>
+      <div class="editor-head">
+        <div>
+          <p class="eyebrow">Homepage</p>
+          <h2>Published content</h2>
+        </div>
+        <p id="identity"></p>
+      </div>
+
+      <fieldset>
+        <legend>Hero</legend>
+        <label>Eyebrow<input name="hero.eyebrow" required maxlength="120"></label>
+        <div class="pair">
+          <label>Heading<input name="hero.heading" required maxlength="90"></label>
+          <label>Italic accent<input name="hero.accent" required maxlength="90"></label>
+        </div>
+        <label>Introduction<textarea name="hero.introduction" required rows="4" maxlength="700"></textarea></label>
+      </fieldset>
+
+      <fieldset>
+        <legend>The firm</legend>
+        <div class="pair">
+          <label>Heading<input name="firm.heading" required maxlength="120"></label>
+          <label>Italic accent<input name="firm.accent" required maxlength="90"></label>
+        </div>
+        <label>First paragraph<textarea name="firm.paragraphOne" required rows="5" maxlength="1800"></textarea></label>
+        <label>Second paragraph<textarea name="firm.paragraphTwo" required rows="5" maxlength="1800"></textarea></label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Contact</legend>
+        <div class="pair">
+          <label>Heading<input name="contact.heading" required maxlength="120"></label>
+          <label>Italic accent<input name="contact.accent" required maxlength="90"></label>
+        </div>
+        <label>Introduction<textarea name="contact.introduction" required rows="4" maxlength="900"></textarea></label>
+        <div class="pair">
+          <label>Email<input name="contact.email" type="email" required></label>
+          <label>Phone<input name="contact.phone" required maxlength="40"></label>
+        </div>
+        <label>Office address<input name="contact.office" required maxlength="240"></label>
+      </fieldset>
+
+      <div class="savebar">
+        <p id="status" role="status" aria-live="polite"></p>
+        <a href="/" target="_blank" rel="noopener">View website ↗</a>
+        <button class="primary" type="submit">Save and publish</button>
+      </div>
+    </form>
+  </main>
+  <script src="admin.js"></script>
+</body>
+</html>

@@ -495,3 +495,31 @@ if (cookie) {
     cookie.hidden = true;
   });
 }
+
+// Published copy is kept in a Git-backed content file so authorised editors can
+// update key homepage text without editing HTML.
+const readPath = (object, path) =>
+  path.split(".").reduce((value, key) => value?.[key], object);
+
+fetch("/content/site.json", { cache: "no-store" })
+  .then((response) => {
+    if (!response.ok) throw new Error("Content unavailable");
+    return response.json();
+  })
+  .then((content) => {
+    document.querySelectorAll("[data-cms]").forEach((element) => {
+      const value = readPath(content, element.dataset.cms);
+      if (typeof value !== "string") return;
+      element.textContent = value;
+
+      if (element.dataset.cms === "contact.email") {
+        element.href = `mailto:${value}`;
+      }
+      if (element.dataset.cms === "contact.phone") {
+        element.href = `tel:${value.replace(/[^\d+]/g, "")}`;
+      }
+    });
+  })
+  .catch(() => {
+    // The carefully authored HTML remains the fallback if content cannot load.
+  });
