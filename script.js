@@ -943,6 +943,121 @@ function applyStructuredSiteContent(siteContent) {
   if (cookieChoice === 'all') trackPageView();
 }
 
+
+function formatInsightDate(value) {
+  const date = new Date(value || '');
+  if (Number.isNaN(date.getTime())) return '';
+  return new Intl.DateTimeFormat('en-KE', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric'
+  }).format(date);
+}
+
+function createLatestInsightCard(post) {
+  const article = document.createElement('article');
+  article.className = 'latest-insight-card';
+
+  const link = document.createElement('a');
+  link.className = 'latest-insight-card-link';
+  link.href = `/article?slug=${encodeURIComponent(post.slug || '')}`;
+  link.setAttribute('aria-label', `Read ${post.title || 'KDH insight'}`);
+
+  const media = document.createElement('div');
+  media.className = 'latest-insight-media';
+  if (post.coverImage) {
+    const image = document.createElement('img');
+    image.src = post.coverImage;
+    image.alt = post.title || 'KDH Advocates insight';
+    image.loading = 'lazy';
+    image.decoding = 'async';
+    media.appendChild(image);
+  } else {
+    const fallback = document.createElement('div');
+    fallback.className = 'latest-insight-fallback';
+    const mark = document.createElement('span');
+    mark.textContent = 'KDH';
+    const label = document.createElement('small');
+    label.textContent = 'Legal insight';
+    fallback.append(mark, label);
+    media.appendChild(fallback);
+  }
+
+  const body = document.createElement('div');
+  body.className = 'latest-insight-body';
+
+  const meta = document.createElement('div');
+  meta.className = 'latest-insight-meta';
+  const type = document.createElement('span');
+  type.textContent = 'Insight';
+  const date = document.createElement('time');
+  const rawDate = post.date || post.scheduledAt || '';
+  if (rawDate) date.dateTime = rawDate;
+  date.textContent = formatInsightDate(rawDate);
+  meta.append(type, date);
+
+  const title = document.createElement('h3');
+  title.textContent = post.title || 'KDH insight';
+
+  const summary = document.createElement('p');
+  summary.textContent = post.summary || 'Read the latest legal and commercial perspective from KDH Advocates.';
+
+  const footer = document.createElement('div');
+  footer.className = 'latest-insight-footer';
+  const author = document.createElement('span');
+  author.textContent = post.author || 'KDH Advocates';
+  const arrow = document.createElement('b');
+  arrow.setAttribute('aria-hidden', 'true');
+  arrow.textContent = '↗';
+  footer.append(author, arrow);
+
+  body.append(meta, title, summary, footer);
+  link.append(media, body);
+  article.appendChild(link);
+  return article;
+}
+
+async function loadLatestInsights() {
+  const grid = document.querySelector('[data-latest-insights]');
+  if (!grid) return;
+
+  try {
+    const response = await fetch('/api/public?route=posts', { cache: 'no-store' });
+    if (!response.ok) throw new Error('Unable to load insights');
+    const payload = await response.json();
+    const posts = Array.isArray(payload) ? payload.slice(0, 3) : [];
+    grid.replaceChildren();
+
+    if (!posts.length) {
+      const empty = document.createElement('div');
+      empty.className = 'latest-insights-empty';
+      const heading = document.createElement('h3');
+      heading.textContent = 'New perspectives are on the way.';
+      const copy = document.createElement('p');
+      copy.textContent = 'Published articles will appear here automatically.';
+      const link = document.createElement('a');
+      link.href = 'insights.html';
+      link.textContent = 'Explore insights →';
+      empty.append(heading, copy, link);
+      grid.appendChild(empty);
+      return;
+    }
+
+    posts.forEach((post) => grid.appendChild(createLatestInsightCard(post)));
+  } catch {
+    grid.replaceChildren();
+    const error = document.createElement('div');
+    error.className = 'latest-insights-empty';
+    const heading = document.createElement('h3');
+    heading.textContent = 'Insights are temporarily unavailable.';
+    const link = document.createElement('a');
+    link.href = 'insights.html';
+    link.textContent = 'Open the Insights page →';
+    error.append(heading, link);
+    grid.appendChild(error);
+  }
+}
+
 async function loadManagedContent() {
   let siteContent = null;
   try {
@@ -976,4 +1091,5 @@ async function loadManagedContent() {
   }
 }
 
+loadLatestInsights();
 loadManagedContent();
