@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
-  <title>KDH Visual Content Manager</title>
+  <title>KDH Dashboard</title>
   <link rel="icon" type="image/png" href="/assets/kdh-favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,34 +14,92 @@
 <body>
   <section class="signin" id="signin">
     <img src="/assets/kdh-law-logo-transparent.png" alt="KDH Advocates LLP">
-    <p class="eyebrow">Secure visual editing</p>
-    <h1>Edit the website exactly as it appears.</h1>
-    <p>Sign in with the authorised GitHub account, select any text directly on the page, and publish through Vercel.</p>
+    <p class="eyebrow">Secure management</p>
+    <h1>KDH Control Panel</h1>
+    <p>Sign in with the authorised GitHub account to manage the website and insights.</p>
     <a class="primary" href="/api/cms/start">Continue with GitHub</a>
   </section>
 
   <div class="workspace" id="workspace" hidden>
-    <header class="toolbar">
-      <a class="brand" href="/" target="_blank" rel="noopener" aria-label="Open the live KDH website">
-        <img src="/assets/kdh-law-logo-transparent.png" alt="KDH Advocates LLP">
-      </a>
-      <div class="toolbar-title">
-        <span>Visual content manager</span>
-        <strong>Edit text directly on the page</strong>
+    <!-- Sidebar Menu -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <a href="/" target="_blank"><img src="/assets/kdh-law-logo-transparent.png" alt="KDH"></a>
       </div>
-      <p id="identity"></p>
-      <p id="status" role="status" aria-live="polite"></p>
-      <button class="quiet" id="logout" type="button">Sign out</button>
-      <button class="primary" id="save" type="button">Save and publish</button>
-    </header>
+      <nav class="sidebar-nav">
+        <button class="menu-item active" data-target="view-home">📝 Live Editor</button>
+        <button class="menu-item" data-target="view-insights">📰 Posting Manager</button>
+        <button class="menu-item" data-target="view-settings">⚙️ Settings</button>
+      </nav>
+      <div class="sidebar-footer">
+        <p id="identity" style="font-size: 0.8rem; opacity: 0.7; margin-bottom: 0.5rem;"></p>
+        <button class="quiet" id="logout" type="button" style="width: 100%; text-align:left;">Sign out</button>
+      </div>
+    </aside>
 
-    <div class="editor-stage" id="view-home">
-      <div class="editor-note">
-        <b>Editing mode</b>
-        <span>Click text to type, click an image, or Shift-click a link to edit its destination.</span>
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <header class="topbar">
+        <div id="topbar-title">Live Site Editor</div>
+        <p id="status" role="status" aria-live="polite"></p>
+        <button class="primary" id="save" type="button">Save Homepage</button>
+      </header>
+
+      <!-- View: Home Editor -->
+      <div class="editor-stage view-section active" id="view-home">
+        <div class="editor-note">
+          <b>Editing mode</b>
+          <span>Click text to type, click an image, or Shift-click a link to edit its destination.</span>
+        </div>
+        <iframe id="site-frame" title="Editable KDH homepage" src="/?cms=visual"></iframe>
       </div>
-      <iframe id="site-frame" title="Editable KDH homepage" src="/?cms=visual"></iframe>
-    </div><div class="editor-stage" id="view-insights" hidden><div class="editor-note"><b>Articles Manager</b><span>Create, edit, or use AI to generate legal insights.</span><button class="primary" id="btn-new-post" style="margin-left: auto;">+ New Article</button></div><div class="posts-list" id="posts-list">Loading articles...</div></div><div class="post-editor" id="post-editor" hidden><div class="editor-note"><b>Edit Article</b><div style="margin-left: auto;"><button class="quiet" id="btn-cancel-post">Cancel</button><button class="primary" id="btn-ai-generate">? Auto-Generate with AI</button></div></div><div class="post-form"><label>Title<input id="post-title"></label><label>URL Slug<input id="post-slug" placeholder="e.g. new-data-laws"></label><label>Summary<textarea id="post-summary" rows="2"></textarea></label><label>Body (HTML)<textarea id="post-content" rows="10"></textarea></label><button class="primary" id="btn-save-post">Save and Publish Post</button><button class="quiet" id="btn-delete-post" style="color: red;">Delete Post</button></div></div><aside class="asset-panel" id="asset-panel" hidden>
+
+      <!-- View: Insights List -->
+      <div class="editor-stage view-section" id="view-insights">
+        <div class="editor-note">
+          <b>Articles Manager</b>
+          <span>Create, edit, or use AI to generate legal insights.</span>
+          <button class="primary" id="btn-new-post" style="margin-left: auto;">+ New Article</button>
+        </div>
+        <div class="posts-list" id="posts-list">Loading articles...</div>
+      </div>
+
+      <!-- View: Post Editor -->
+      <div class="editor-stage view-section" id="view-post-editor">
+        <div class="editor-note">
+          <b>Edit Article</b>
+          <div style="margin-left: auto;">
+            <button class="quiet" id="btn-cancel-post">Cancel</button>
+            <button class="primary" id="btn-ai-generate">✨ Auto-Generate with AI</button>
+          </div>
+        </div>
+        <div class="post-form">
+          <label>Title<input id="post-title"></label>
+          <label>URL Slug<input id="post-slug" placeholder="e.g. new-data-laws"></label>
+          <label>Summary<textarea id="post-summary" rows="2"></textarea></label>
+          <label>Body (HTML)<textarea id="post-content" rows="10"></textarea></label>
+          <button class="primary" id="btn-save-post">Save and Publish Post</button>
+          <button class="quiet" id="btn-delete-post" style="color: red;">Delete Post</button>
+        </div>
+      </div>
+
+      <!-- View: Settings -->
+      <div class="editor-stage view-section" id="view-settings">
+        <div class="post-form">
+          <h2>Dashboard Settings</h2>
+          <p>Configure external integrations.</p>
+          <label style="margin-top: 1rem;">
+            Google Gemini API Key
+            <input type="password" id="gemini-key" placeholder="AIzaSy...">
+            <small style="font-weight: normal; opacity: 0.8; margin-top: 0.25rem;">This is securely saved in your browser's local storage.</small>
+          </label>
+          <button class="primary" id="btn-save-settings" style="width: fit-content; margin-top: 1rem;">Save Settings</button>
+        </div>
+      </div>
+    </main>
+
+    <!-- Legacy Asset Panel (for Homepage Editor) -->
+    <aside class="asset-panel" id="asset-panel" hidden>
       <div class="asset-head">
         <div>
           <span id="asset-kind">Selected item</span>
@@ -60,8 +118,8 @@
       </div>
     </aside>
   </div>
+  
   <script src="/admin/admin.js"></script>
-<script src="/admin/posts-manager.js"></script></body>
+  <script src="/admin/posts-manager.js"></script>
+</body>
 </html>
-
-

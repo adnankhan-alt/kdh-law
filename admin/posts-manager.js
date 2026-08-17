@@ -1,76 +1,95 @@
-const tabHome = document.querySelector("#tab-home");
-const tabInsights = document.querySelector("#tab-insights");
-const viewHome = document.querySelector("#view-home");
-const viewInsights = document.querySelector("#view-insights");
-const postEditor = document.querySelector("#post-editor");
-const postsList = document.querySelector("#posts-list");
+const menuItems = document.querySelectorAll('.menu-item');
+const viewSections = document.querySelectorAll('.view-section');
 
-const btnNewPost = document.querySelector("#btn-new-post");
-const btnCancelPost = document.querySelector("#btn-cancel-post");
-const btnSavePost = document.querySelector("#btn-save-post");
-const btnDeletePost = document.querySelector("#btn-delete-post");
-const btnAiGenerate = document.querySelector("#btn-ai-generate");
+const postEditor = document.querySelector('#view-post-editor');
+const viewInsights = document.querySelector('#view-insights');
+const postsList = document.querySelector('#posts-list');
 
-const pTitle = document.querySelector("#post-title");
-const pSlug = document.querySelector("#post-slug");
-const pSummary = document.querySelector("#post-summary");
-const pContent = document.querySelector("#post-content");
+const btnNewPost = document.querySelector('#btn-new-post');
+const btnCancelPost = document.querySelector('#btn-cancel-post');
+const btnSavePost = document.querySelector('#btn-save-post');
+const btnDeletePost = document.querySelector('#btn-delete-post');
+const btnAiGenerate = document.querySelector('#btn-ai-generate');
+
+const pTitle = document.querySelector('#post-title');
+const pSlug = document.querySelector('#post-slug');
+const pSummary = document.querySelector('#post-summary');
+const pContent = document.querySelector('#post-content');
+
+const btnSaveSettings = document.querySelector('#btn-save-settings');
+const geminiKeyInput = document.querySelector('#gemini-key');
 
 let currentPosts = [];
 let editingSha = null;
 
-if (tabHome && tabInsights) {
-  tabHome.addEventListener("click", () => {
-    tabHome.classList.add("active");
-    tabInsights.classList.remove("active");
-    viewHome.hidden = false;
-    viewInsights.hidden = true;
-    postEditor.hidden = true;
-  });
-
-  tabInsights.addEventListener("click", () => {
-    tabInsights.classList.add("active");
-    tabHome.classList.remove("active");
-    viewHome.hidden = true;
-    viewInsights.hidden = false;
-    postEditor.hidden = true;
-    loadPosts();
+// Initialize settings
+if (geminiKeyInput) {
+  geminiKeyInput.value = localStorage.getItem('kdh_gemini_key') || '';
+}
+if (btnSaveSettings) {
+  btnSaveSettings.addEventListener('click', () => {
+    localStorage.setItem('kdh_gemini_key', geminiKeyInput.value.trim());
+    const originalText = btnSaveSettings.textContent;
+    btnSaveSettings.textContent = 'Saved!';
+    setTimeout(() => { btnSaveSettings.textContent = originalText; }, 2000);
   });
 }
 
+// Sidebar Navigation
+menuItems.forEach(item => {
+  item.addEventListener('click', () => {
+    menuItems.forEach(m => m.classList.remove('active'));
+    item.classList.add('active');
+    
+    const targetId = item.getAttribute('data-target');
+    viewSections.forEach(section => {
+      section.classList.remove('active');
+    });
+    
+    document.getElementById(targetId).classList.add('active');
+    
+    if (targetId === 'view-insights') {
+      loadPosts();
+    }
+  });
+});
+
 async function loadPosts() {
-  postsList.innerHTML = "Loading articles...";
+  postsList.innerHTML = 'Loading articles...';
   try {
-    const res = await fetch("/api/cms/posts");
+    const res = await fetch('/api/cms/posts');
     currentPosts = await res.json();
     renderPosts();
   } catch (e) {
-    postsList.innerHTML = "Failed to load posts.";
+    postsList.innerHTML = 'Failed to load posts.';
   }
 }
 
 function renderPosts() {
   if (currentPosts.length === 0) {
-    postsList.innerHTML = "No articles found.";
+    postsList.innerHTML = 'No articles found.';
     return;
   }
-  postsList.innerHTML = currentPosts.map(p => `
+  postsList.innerHTML = currentPosts.map(p => {
+    const slug = p.name.replace('.json', '');
+    return \
     <div class="post-item">
       <div>
-        <strong>${p.name.replace(".json", "")}</strong>
+        <strong>\</strong>
       </div>
-      <button onclick="editPost('${p.name.replace(".json", "")}', '${p.sha}')">Edit</button>
+      <button onclick="editPost('\', '\')">Edit</button>
     </div>
-  `).join("");
+    \;
+  }).join('');
 }
 
 window.editPost = async (slug, sha) => {
-  status.textContent = "Loading post...";
+  document.getElementById('status').textContent = 'Loading post...';
   try {
-    const res = await fetch(`/api/posts`);
+    const res = await fetch(\/api/posts\);
     const allPosts = await res.json();
     const post = allPosts.find(p => p.slug === slug);
-    if (!post) throw new Error("Post not found");
+    if (!post) throw new Error('Post not found');
     
     pTitle.value = post.title;
     pSlug.value = post.slug;
@@ -78,38 +97,38 @@ window.editPost = async (slug, sha) => {
     pContent.value = post.content;
     editingSha = sha;
     
-    viewInsights.hidden = true;
-    postEditor.hidden = false;
+    viewSections.forEach(s => s.classList.remove('active'));
+    postEditor.classList.add('active');
     btnDeletePost.hidden = false;
-    status.textContent = "";
+    document.getElementById('status').textContent = '';
   } catch (e) {
-    status.textContent = "Error loading post";
+    document.getElementById('status').textContent = 'Error loading post';
   }
 };
 
-btnNewPost?.addEventListener("click", () => {
-  pTitle.value = "";
-  pSlug.value = "";
-  pSummary.value = "";
-  pContent.value = "";
+btnNewPost?.addEventListener('click', () => {
+  pTitle.value = '';
+  pSlug.value = '';
+  pSummary.value = '';
+  pContent.value = '';
   editingSha = null;
-  viewInsights.hidden = true;
-  postEditor.hidden = false;
+  viewSections.forEach(s => s.classList.remove('active'));
+  postEditor.classList.add('active');
   btnDeletePost.hidden = true;
 });
 
-btnCancelPost?.addEventListener("click", () => {
-  postEditor.hidden = true;
-  viewInsights.hidden = false;
+btnCancelPost?.addEventListener('click', () => {
+  postEditor.classList.remove('active');
+  viewInsights.classList.add('active');
 });
 
-btnSavePost?.addEventListener("click", async () => {
+btnSavePost?.addEventListener('click', async () => {
   btnSavePost.disabled = true;
-  status.textContent = "Saving post...";
+  document.getElementById('status').textContent = 'Saving post...';
   try {
-    const res = await fetch("/api/cms/posts", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
+    const res = await fetch('/api/cms/posts', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         slug: pSlug.value.trim(),
         title: pTitle.value.trim(),
@@ -118,68 +137,77 @@ btnSavePost?.addEventListener("click", async () => {
         sha: editingSha
       })
     });
-    if (!res.ok) throw new Error("Failed to save");
+    if (!res.ok) throw new Error('Failed to save');
     const data = await res.json();
     editingSha = data.sha;
-    status.textContent = "Post published!";
+    document.getElementById('status').textContent = 'Post published!';
     setTimeout(() => {
-      postEditor.hidden = true;
-      viewInsights.hidden = false;
+      postEditor.classList.remove('active');
+      viewInsights.classList.add('active');
       loadPosts();
+      document.getElementById('status').textContent = '';
     }, 1500);
   } catch (e) {
-    status.textContent = e.message;
+    document.getElementById('status').textContent = e.message;
   }
   btnSavePost.disabled = false;
 });
 
-btnDeletePost?.addEventListener("click", async () => {
-  if (!confirm("Delete this post?")) return;
+btnDeletePost?.addEventListener('click', async () => {
+  if (!confirm('Delete this post?')) return;
   btnDeletePost.disabled = true;
-  status.textContent = "Deleting post...";
+  document.getElementById('status').textContent = 'Deleting post...';
   try {
-    const res = await fetch("/api/cms/posts", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
+    const res = await fetch('/api/cms/posts', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         slug: pSlug.value.trim(),
         sha: editingSha
       })
     });
-    if (!res.ok) throw new Error("Failed to delete");
-    status.textContent = "Post deleted!";
+    if (!res.ok) throw new Error('Failed to delete');
+    document.getElementById('status').textContent = 'Post deleted!';
     setTimeout(() => {
-      postEditor.hidden = true;
-      viewInsights.hidden = false;
+      postEditor.classList.remove('active');
+      viewInsights.classList.add('active');
       loadPosts();
+      document.getElementById('status').textContent = '';
     }, 1500);
   } catch (e) {
-    status.textContent = e.message;
+    document.getElementById('status').textContent = e.message;
   }
   btnDeletePost.disabled = false;
 });
 
-btnAiGenerate?.addEventListener("click", async () => {
-  const prompt = prompt("Enter a topic for the AI to write about:");
+btnAiGenerate?.addEventListener('click', async () => {
+  const prompt = window.prompt('Enter a topic for the AI to write about:');
   if (!prompt) return;
+  
+  const apiKey = localStorage.getItem('kdh_gemini_key');
+  if (!apiKey) {
+    alert('Please go to Settings and enter your Gemini API Key first.');
+    return;
+  }
+  
   btnAiGenerate.disabled = true;
-  status.textContent = "AI is writing...";
+  document.getElementById('status').textContent = 'AI is writing... (this may take a few seconds)';
   try {
-    const res = await fetch("/api/cms/generate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt })
+    const res = await fetch('/api/cms/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt, apiKey })
     });
-    if (!res.ok) throw new Error("AI generation failed");
+    if (!res.ok) throw new Error('AI generation failed. Check your API key.');
     const data = await res.json();
     
-    pTitle.value = data.title || "";
-    pSlug.value = (data.title || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-    pSummary.value = data.summary || "";
-    pContent.value = data.content || "";
-    status.textContent = "AI generation complete! Review and save.";
+    pTitle.value = data.title || '';
+    pSlug.value = (data.title || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    pSummary.value = data.summary || '';
+    pContent.value = data.content || '';
+    document.getElementById('status').textContent = 'AI generation complete! Review and save.';
   } catch (e) {
-    status.textContent = e.message;
+    document.getElementById('status').textContent = e.message;
   }
   btnAiGenerate.disabled = false;
 });

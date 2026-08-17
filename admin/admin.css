@@ -56,7 +56,7 @@ h1 {
   color: #fff;
 }
 .quiet { padding: 10px 12px; background: transparent; color: var(--navy); }
-.workspace { min-height: 100vh; }
+.workspace { display: flex; height: 100vh; overflow: hidden; background: #f5f5f5; }
 .toolbar {
   min-height: 76px;
   padding: 9px clamp(14px, 3vw, 42px);
@@ -145,3 +145,7 @@ h1 {
 .admin-tabs { display: flex; gap: 1rem; margin-top: 1rem; } .admin-tabs button { background: none; border: none; color: rgba(255,255,255,0.6); cursor: pointer; padding: 0.5rem 0; font-weight: 600; border-bottom: 2px solid transparent; } .admin-tabs button.active { color: #fff; border-color: #fff; }
 .post-form { display: flex; flex-direction: column; gap: 1.5rem; padding: 2rem; max-width: 800px; } .post-form label { display: flex; flex-direction: column; gap: 0.5rem; font-weight: 600; } .post-form input, .post-form textarea { padding: 0.75rem; border: 1px solid #ccc; border-radius: 4px; font-family: inherit; }
 .posts-list { padding: 2rem; display: grid; gap: 1rem; } .post-item { background: #f9f9f9; padding: 1.5rem; border-radius: 8px; border: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; } .post-item strong { display: block; font-size: 1.1rem; color: #111; margin-bottom: 0.25rem;} .post-item button { cursor: pointer; background: #001759; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; font-weight: 600; }
+
+.sidebar { width: 260px; background: #001759; color: white; display: flex; flex-direction: column; padding: 1.5rem; } .sidebar-brand { margin-bottom: 2rem; } .sidebar-brand img { max-width: 150px; } .sidebar-nav { flex-grow: 1; display: flex; flex-direction: column; gap: 0.5rem; } .menu-item { background: transparent; border: none; color: rgba(255,255,255,0.7); text-align: left; padding: 0.75rem 1rem; cursor: pointer; font-weight: 600; border-radius: 6px; transition: all 0.2s; } .menu-item:hover { background: rgba(255,255,255,0.1); color: white; } .menu-item.active { background: #d4af37; color: #001759; } .sidebar-footer { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem; }
+.main-content { flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; } .topbar { display: flex; align-items: center; padding: 1rem 2rem; background: white; border-bottom: 1px solid #ddd; gap: 1rem; } #topbar-title { font-weight: 700; font-size: 1.25rem; flex-grow: 1; }
+.view-section { display: none; flex-grow: 1; overflow-y: auto; } .view-section.active { display: flex; flex-direction: column; } .editor-stage { height: 100%; border: none; }

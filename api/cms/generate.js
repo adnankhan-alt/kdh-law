@@ -9,8 +9,8 @@ module.exports = async function handler(req, res) {
   const { prompt } = req.body;
   if (!prompt) return res.status(400).json({ error: "Missing prompt" });
 
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) return res.status(500).json({ error: "GEMINI_API_KEY is not configured on Vercel." });
+  const apiKey = req.body.apiKey || process.env.GEMINI_API_KEY;
+  if (!apiKey) return res.status(400).json({ error: "No Gemini API key provided." });
 
   try {
     const aiPrompt = `You are a professional legal content writer for KDH Advocates LLP, a premier commercial law firm in Nairobi, Kenya.
@@ -50,3 +50,4 @@ Ensure the tone is authoritative, commercial, and relevant to the African/Kenyan
     return res.status(500).json({ error: error.message });
   }
 };
+
