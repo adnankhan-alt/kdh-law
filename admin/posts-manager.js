@@ -19,8 +19,21 @@ const pContent = document.querySelector('#post-content');
 const btnSaveSettings = document.querySelector('#btn-save-settings');
 const geminiKeyInput = document.querySelector('#gemini-key');
 
+const hamburger = document.getElementById('hamburger');
+const sidebar = document.getElementById('sidebar');
+const sidebarOverlay = document.getElementById('sidebar-overlay');
+
 let currentPosts = [];
 let editingSha = null;
+
+// Sidebar toggle logic
+function toggleSidebar() {
+  sidebar?.classList.toggle('open');
+  sidebarOverlay?.classList.toggle('open');
+}
+
+if (hamburger) hamburger.addEventListener('click', toggleSidebar);
+if (sidebarOverlay) sidebarOverlay.addEventListener('click', toggleSidebar);
 
 // Initialize settings
 if (geminiKeyInput) {
@@ -46,7 +59,17 @@ menuItems.forEach(item => {
       section.classList.remove('active');
     });
     
-    document.getElementById(targetId).classList.add('active'); document.getElementById('topbar-title').textContent = item.textContent.replace(/[^\w\s]/g, '').trim();
+    document.getElementById(targetId).classList.add('active');
+    
+    const topbarTitle = document.getElementById('topbar-title');
+    if (topbarTitle) {
+      topbarTitle.textContent = item.textContent.replace(/[^\w\s]/g, '').trim();
+    }
+    
+    // Auto-close on mobile
+    if (window.innerWidth <= 850 && sidebar.classList.contains('open')) {
+      toggleSidebar();
+    }
     
     if (targetId === 'view-insights') {
       loadPosts();
@@ -72,21 +95,21 @@ function renderPosts() {
   }
   postsList.innerHTML = currentPosts.map(p => {
     const slug = p.name.replace('.json', '');
-    return \
+    return `
     <div class="post-item">
       <div>
-        <strong>\</strong>
+        <strong>${slug}</strong>
       </div>
-      <button onclick="editPost('\', '\')">Edit</button>
+      <button onclick="editPost('${slug}', '${p.sha}')">Edit</button>
     </div>
-    \;
+    `;
   }).join('');
 }
 
 window.editPost = async (slug, sha) => {
   document.getElementById('status').textContent = 'Loading post...';
   try {
-    const res = await fetch(\/api/posts\);
+    const res = await fetch(`/api/posts`);
     const allPosts = await res.json();
     const post = allPosts.find(p => p.slug === slug);
     if (!post) throw new Error('Post not found');
@@ -191,49 +214,23 @@ btnAiGenerate?.addEventListener('click', async () => {
   }
   
   btnAiGenerate.disabled = true;
-  document.getElementById('status').textContent = 'AI is writing... (this may take a few seconds)';
+  document.getElementById('status').textContent = 'AI is writing...';
   try {
     const res = await fetch('/api/cms/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ prompt, apiKey })
     });
-    if (!res.ok) throw new Error('AI generation failed. Check your API key.');
+    if (!res.ok) throw new Error('AI generation failed. Check API key.');
     const data = await res.json();
     
     pTitle.value = data.title || '';
     pSlug.value = (data.title || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
     pSummary.value = data.summary || '';
     pContent.value = data.content || '';
-    document.getElementById('status').textContent = 'AI generation complete! Review and save.';
+    document.getElementById('status').textContent = 'AI generation complete!';
   } catch (e) {
     document.getElementById('status').textContent = e.message;
   }
   btnAiGenerate.disabled = false;
 });
-
-const hamburger = document.getElementById('hamburger');
-const sidebar = document.getElementById('sidebar');
-const sidebarOverlay = document.getElementById('sidebar-overlay');
-
-function toggleSidebar() {
-  sidebar.classList.toggle('open');
-  sidebarOverlay.classList.toggle('open');
-}
-
-if (hamburger) {
-  hamburger.addEventListener('click', toggleSidebar);
-}
-if (sidebarOverlay) {
-  sidebarOverlay.addEventListener('click', toggleSidebar);
-}
-
-// Auto-close sidebar on mobile when a menu item is clicked
-menuItems.forEach(item => {
-  item.addEventListener('click', () => {
-    if (window.innerWidth <= 850 && sidebar.classList.contains('open')) {
-      toggleSidebar();
-    }
-  });
-});
-
