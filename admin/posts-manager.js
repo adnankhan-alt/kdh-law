@@ -168,7 +168,7 @@
         reader.onload = () => resolve(reader.result);
         reader.readAsDataURL(file);
       });
-      const data = await api('/api/cms/upload', {
+      const data = await api('/api/cms?route=upload', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ filename: file.name, contentType: file.type, content: dataUrl })
@@ -202,7 +202,7 @@
     if (!postsList) return [];
     if (!quiet) postsList.textContent = 'Loading articles…';
     try {
-      currentPosts = await api('/api/cms/posts', { cache: 'no-store' });
+      currentPosts = await api('/api/cms?route=posts', { cache: 'no-store' });
       renderPosts();
       $('#metric-posts').textContent = String(currentPosts.length);
       return currentPosts;
@@ -283,7 +283,7 @@
   async function editPost(slug) {
     setStatus('Loading article…');
     try {
-      const data = await api(`/api/cms/posts?slug=${encodeURIComponent(slug)}`, { cache: 'no-store' });
+      const data = await api(`/api/cms?route=posts&slug=${encodeURIComponent(slug)}`, { cache: 'no-store' });
       const post = data.post || {};
       editingSha = data.sha;
       editingSlug = post.slug;
@@ -327,7 +327,7 @@
     btnSavePost.disabled = true;
     setStatus('Saving article to GitHub…');
     try {
-      const data = await api('/api/cms/posts', {
+      const data = await api('/api/cms?route=posts', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -365,7 +365,7 @@
     btnDeletePost.disabled = true;
     setStatus('Deleting article…');
     try {
-      await api('/api/cms/posts', {
+      await api('/api/cms?route=posts', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ slug: editingSlug, sha: editingSha })
@@ -396,7 +396,7 @@
     btnAiGenerate.disabled = true;
     setStatus('Gemini is drafting the article…');
     try {
-      const data = await api('/api/cms/generate', {
+      const data = await api('/api/cms?route=generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt, apiKey })
@@ -417,7 +417,7 @@
 
   async function loadSiteData({ quiet = false } = {}) {
     try {
-      const data = await api('/api/cms/site', { cache: 'no-store' });
+      const data = await api('/api/cms?route=site', { cache: 'no-store' });
       siteState = data.content || {};
       renderTeamManager();
       renderPracticeManager();
@@ -435,9 +435,9 @@
 
   async function saveSitePatch(patch, message) {
     if (!canEdit()) throw new Error('Your role is read-only.');
-    const latest = await api('/api/cms/site', { cache: 'no-store' });
+    const latest = await api('/api/cms?route=site', { cache: 'no-store' });
     const content = { ...(latest.content || {}), ...patch };
-    const result = await api('/api/cms/site', {
+    const result = await api('/api/cms?route=site', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ content })
@@ -607,7 +607,7 @@
   async function loadEnquiries({ quiet = false } = {}) {
     try {
       if (!quiet) enquiriesList.textContent = 'Loading enquiries…';
-      const enquiries = await api('/api/cms/enquiries', { cache: 'no-store' });
+      const enquiries = await api('/api/cms?route=enquiries', { cache: 'no-store' });
       const newCount = enquiries.filter((item) => item.status === 'new').length;
       $('#metric-enquiries').textContent = String(newCount);
       if (!quiet) renderEnquiries(enquiries);
@@ -644,7 +644,7 @@
     if (event.target.closest('.save-enquiry')) {
       setStatus('Saving enquiry…');
       try {
-        await api('/api/cms/enquiries', {
+        await api('/api/cms?route=enquiries', {
           method: 'PATCH', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ id, status: $('.enquiry-status', card).value, notes: $('.enquiry-notes', card).value })
         });
@@ -655,7 +655,7 @@
     if (event.target.closest('.delete-enquiry')) {
       if (!window.confirm('Permanently delete this enquiry from private storage?')) return;
       try {
-        await api('/api/cms/enquiries', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+        await api('/api/cms?route=enquiries', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
         setStatus('Enquiry deleted.');
         loadEnquiries();
       } catch (error) { setStatus(error.message); }
@@ -665,7 +665,7 @@
   async function loadAnalytics() {
     $('#analytics-total').textContent = '…';
     try {
-      const data = await api('/api/cms/analytics', { cache: 'no-store' });
+      const data = await api('/api/cms?route=analytics', { cache: 'no-store' });
       $('#analytics-total').textContent = String(data.total30d || 0);
       $('#analytics-top-page').textContent = data.topPages?.[0]?.path || '—';
       renderBars($('#analytics-days'), data.byDay || [], 'date', 'views');
@@ -692,7 +692,7 @@
     if (!canAdmin() || !adminsManager) return;
     adminsManager.textContent = 'Loading access roles…';
     try {
-      const data = await api('/api/cms/admins', { cache: 'no-store' });
+      const data = await api('/api/cms?route=admins', { cache: 'no-store' });
       renderAdmins(data.content?.users || []);
     } catch (error) {
       adminsManager.textContent = error.message;
@@ -729,7 +729,7 @@
     })).filter((user) => user.login);
     setStatus('Saving access roles…');
     try {
-      await api('/api/cms/admins', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: { users } }) });
+      await api('/api/cms?route=admins', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content: { users } }) });
       setStatus('CMS access roles saved.');
       loadAdmins();
     } catch (error) { setStatus(error.message); }

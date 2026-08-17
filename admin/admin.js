@@ -96,7 +96,7 @@ function applyRoleUi(auth) {
 
 async function exchangeKeyword(key) {
   if (!key) throw new Error('Enter the admin access keyword.');
-  await request('/api/cms/keyword-auth', {
+  await request('/api/cms?route=keyword-auth', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ key })
@@ -124,14 +124,14 @@ async function handleUrlGateway() {
 async function initialise() {
   await handleUrlGateway();
   try {
-    const auth = await request('/api/cms/auth', { cache: 'no-store' });
+    const auth = await request('/api/cms?route=auth', { cache: 'no-store' });
     window.KDHCMS.auth = auth;
     signin.hidden = true;
     workspace.hidden = false;
     applyRoleUi(auth);
 
     try {
-      const result = await request('/api/cms/content', { cache: 'no-store' });
+      const result = await request('/api/cms?route=content', { cache: 'no-store' });
       publishedContent = result.content;
       applyPublishedContent();
     } catch (error) {
@@ -191,7 +191,7 @@ saveHomepage?.addEventListener('click', async () => {
   window.KDHCMS.setStatus('Saving homepage…');
   try {
     const content = editor.exportContent();
-    const result = await request('/api/cms/content', {
+    const result = await request('/api/cms?route=content', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ content })
@@ -214,7 +214,7 @@ async function uploadImage(file) {
     reader.onload = () => resolve(reader.result);
     reader.readAsDataURL(file);
   });
-  const result = await request('/api/cms/upload', {
+  const result = await request('/api/cms?route=upload', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ filename: file.name, contentType: file.type, content })
@@ -263,7 +263,7 @@ document.querySelector('#asset-close')?.addEventListener('click', () => {
 
 logout?.addEventListener('click', async () => {
   try {
-    await request('/api/cms/logout', { method: 'POST' });
+    await request('/api/cms?route=logout', { method: 'POST' });
   } finally {
     window.location.replace('/admin/');
   }
