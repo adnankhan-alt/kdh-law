@@ -27,7 +27,8 @@
         <a href="/" target="_blank"><img src="/assets/kdh-law-logo-transparent.png" alt="KDH"></a>
       </div>
       <nav class="sidebar-nav">
-        <button class="menu-item active" data-target="view-home">📝 Live Editor</button>
+        <button class="menu-item active" data-target="view-dashboard">🏠 Dashboard</button>
+        <button class="menu-item" data-target="view-home">📝 Live Editor</button>
         <button class="menu-item" data-target="view-insights">📰 Posting Manager</button>
         <button class="menu-item" data-target="view-settings">⚙️ Settings</button>
       </nav>
@@ -45,8 +46,19 @@
         <button class="primary" id="save" type="button">Save Homepage</button>
       </header>
 
+      <!-- View: Dashboard Landing -->
+      <div class="editor-stage view-section active" id="view-dashboard" style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; background: white; padding: 4rem 2rem;">
+        <img src="/assets/kdh-law-logo-transparent.png" alt="KDH" style="max-width: 200px; margin-bottom: 2rem; filter: invert(1); opacity: 0.8;">
+        <h1 style="font-family: 'Playfair Display', serif; color: #001759; margin-bottom: 1rem;">Admin CMS</h1>
+        <p style="max-width: 600px; color: #555; font-size: 1.1rem; margin-bottom: 3rem;">Welcome to the KDH Advocates Control Panel. Use the hamburger menu in the top left to navigate between the Live Editor, Posting Manager, and Settings.</p>
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;">
+          <button class="primary" onclick="document.querySelector('[data-target=\'view-home\']').click()">Open Live Editor</button>
+          <button class="primary" onclick="document.querySelector('[data-target=\'view-insights\']').click()" style="background: #001759; color: white;">Manage Articles</button>
+        </div>
+      </div>
+
       <!-- View: Home Editor -->
-      <div class="editor-stage view-section active" id="view-home">
+      <div class="editor-stage view-section" id="view-home">
         <div class="editor-note">
           <b>Editing mode</b>
           <span>Click text to type, click an image, or Shift-click a link to edit its destination.</span>
