@@ -35,7 +35,7 @@ module.exports = async function handler(req, res) {
   }
 
   const origin = process.env.CMS_PUBLIC_ORIGIN || 'https://www.kdhadvocates.com';
-  const redirectUri = `${origin.replace(/\/$/, '')}/api/cms/callback`;
+  const redirectUri = `${origin.replace(/\/$/, '')}/api/github-callback`;
   const tokenResponse = await fetch('https://github.com/login/oauth/access_token', {
     method: 'POST',
     headers: { Accept: 'application/json', 'Content-Type': 'application/json' },

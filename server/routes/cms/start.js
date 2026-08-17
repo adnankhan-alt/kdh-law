@@ -8,7 +8,7 @@ module.exports = async function handler(req, res) {
   }
 
   const origin = process.env.CMS_PUBLIC_ORIGIN || 'https://www.kdhadvocates.com';
-  const redirectUri = `${origin.replace(/\/$/, '')}/api/cms/callback`;
+  const redirectUri = `${origin.replace(/\/$/, '')}/api/github-callback`;
   const state = crypto.randomBytes(24).toString('hex');
   setCookie(
     res,
