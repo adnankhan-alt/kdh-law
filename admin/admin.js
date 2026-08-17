@@ -21,7 +21,6 @@ const linkHref = document.querySelector('#link-href');
 
 window.KDHCMS = window.KDHCMS || { auth: null };
 
-let publishedContent = null;
 let visualReady = false;
 let selectedAsset = null;
 
@@ -40,14 +39,17 @@ async function request(url, options = {}) {
 }
 
 window.KDHCMS.request = request;
-window.KDHCMS.setStatus = (message) => {
-  if (status) status.textContent = message || '';
+let statusTimer = null;
+window.KDHCMS.setStatus = (message, { persist = false } = {}) => {
+  if (!status) return;
+  window.clearTimeout(statusTimer);
+  status.textContent = message || '';
+  if (message && !persist) {
+    statusTimer = window.setTimeout(() => {
+      status.textContent = '';
+    }, 3200);
+  }
 };
-
-function applyPublishedContent() {
-  if (!visualReady || !publishedContent || !frame?.contentWindow) return;
-  frame.contentWindow.KDHVisualEditor?.applyContent(publishedContent);
-}
 
 function showImageEditor(image) {
   selectedAsset = { type: 'image', key: image.dataset.visualKey };
@@ -130,14 +132,6 @@ async function initialise() {
     workspace.hidden = false;
     applyRoleUi(auth);
 
-    try {
-      const result = await request('/api/cms?route=content', { cache: 'no-store' });
-      publishedContent = result.content;
-      applyPublishedContent();
-    } catch (error) {
-      window.KDHCMS.setStatus(`Homepage editor: ${error.message}`);
-    }
-
     window.dispatchEvent(new CustomEvent('kdh:cms-authenticated', { detail: auth }));
   } catch {
     signin.hidden = false;
@@ -165,9 +159,7 @@ window.addEventListener('message', (event) => {
   if (event.origin !== window.location.origin) return;
   if (event.data?.type === 'kdh:visual-ready') {
     visualReady = true;
-    applyPublishedContent();
     bindFrameAssetSelection();
-    window.KDHCMS.setStatus('Live editor ready');
   }
   if (event.data?.type === 'kdh:image-selected') {
     const image = [...(frame?.contentDocument?.querySelectorAll('img[data-visual-key]') || [])]
@@ -196,7 +188,6 @@ saveHomepage?.addEventListener('click', async () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ content })
     });
-    publishedContent = content;
     window.KDHCMS.setStatus(result.message || 'Homepage saved.');
   } catch (error) {
     window.KDHCMS.setStatus(error.message);
