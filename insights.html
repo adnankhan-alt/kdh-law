@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Insights, news, and articles from KDH Advocates LLP.">
+  <meta name="theme-color" content="#001759">
+  <title>Insights | KDH Advocates LLP</title>
+  <link rel="icon" type="image/png" sizes="256x256" href="assets/kdh-favicon.png">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .insights-grid { display: grid; gap: 2rem; padding: 4rem 5%; max-width: 1200px; margin: 0 auto; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+    .insight-card { border: 1px solid #ddd; padding: 2rem; border-radius: 8px; display: flex; flex-direction: column; gap: 1rem; }
+    .insight-card h3 { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: #001759; }
+    .insight-card p { flex-grow: 1; }
+    .insight-card a { font-weight: 600; color: #d4af37; text-decoration: none; }
+    .insight-card a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand brand-logo" href="/" aria-label="KDH Advocates home">
+      <img src="assets/kdh-law-logo-transparent.png" alt="KDH Advocates LLP">
+    </a>
+    <nav id="nav">
+      <a href="/">Home</a>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="section" style="padding-top: 8rem; text-align: center;">
+      <h1 style="font-family: 'Playfair Display', serif; font-size: 3rem; color: #001759;">Insights & News</h1>
+      <p style="max-width: 600px; margin: 1rem auto; font-size: 1.1rem;">Expert legal analysis, firm news, and commercial updates from our team.</p>
+    </section>
+
+    <div class="insights-grid" id="insights-grid">
+      <p>Loading insights...</p>
+    </div>
+  </main>
+
+  <footer>
+    <div class="footer-bottom">
+      <small>&copy; 2026 KDH Advocates LLP. All rights reserved.</small>
+      <p>Trust. Integrity. Results.</p>
+    </div>
+  </footer>
+
+  <script>
+    async function loadInsights() {
+      const grid = document.getElementById("insights-grid");
+      try {
+        const res = await fetch("/api/posts");
+        const posts = await res.json();
+        if (posts.length === 0) {
+          grid.innerHTML = "<p>No insights published yet.</p>";
+          return;
+        }
+        grid.innerHTML = posts.map(p => `
+          <article class="insight-card">
+            <small>${new Date(p.date).toLocaleDateString()}</small>
+            <h3>${p.title}</h3>
+            <p>${p.summary}</p>
+            <a href="/article.html?slug=${p.slug}">Read article &rarr;</a>
+          </article>
+        `).join("");
+      } catch (e) {
+        grid.innerHTML = "<p>Unable to load insights.</p>";
+      }
+    }
+    loadInsights();
+  </script>
+</body>
+</html>

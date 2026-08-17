@@ -35,15 +35,13 @@
       <button class="primary" id="save" type="button">Save and publish</button>
     </header>
 
-    <div class="editor-stage">
+    <div class="editor-stage" id="view-home">
       <div class="editor-note">
         <b>Editing mode</b>
         <span>Click text to type, click an image, or Shift-click a link to edit its destination.</span>
       </div>
       <iframe id="site-frame" title="Editable KDH homepage" src="/?cms=visual"></iframe>
-    </div>
-
-    <aside class="asset-panel" id="asset-panel" hidden>
+    </div><div class="editor-stage" id="view-insights" hidden><div class="editor-note"><b>Articles Manager</b><span>Create, edit, or use AI to generate legal insights.</span><button class="primary" id="btn-new-post" style="margin-left: auto;">+ New Article</button></div><div class="posts-list" id="posts-list">Loading articles...</div></div><div class="post-editor" id="post-editor" hidden><div class="editor-note"><b>Edit Article</b><div style="margin-left: auto;"><button class="quiet" id="btn-cancel-post">Cancel</button><button class="primary" id="btn-ai-generate">? Auto-Generate with AI</button></div></div><div class="post-form"><label>Title<input id="post-title"></label><label>URL Slug<input id="post-slug" placeholder="e.g. new-data-laws"></label><label>Summary<textarea id="post-summary" rows="2"></textarea></label><label>Body (HTML)<textarea id="post-content" rows="10"></textarea></label><button class="primary" id="btn-save-post">Save and Publish Post</button><button class="quiet" id="btn-delete-post" style="color: red;">Delete Post</button></div></div><aside class="asset-panel" id="asset-panel" hidden>
       <div class="asset-head">
         <div>
           <span id="asset-kind">Selected item</span>
@@ -63,5 +61,7 @@
     </aside>
   </div>
   <script src="/admin/admin.js"></script>
-</body>
+<script src="/admin/posts-manager.js"></script></body>
 </html>
+
+

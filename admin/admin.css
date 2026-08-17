@@ -141,3 +141,7 @@ h1 {
   .toolbar .quiet { margin-left: auto; }
   .toolbar .primary { padding-inline: 11px; font-size: .76rem; }
 }
+
+.admin-tabs { display: flex; gap: 1rem; margin-top: 1rem; } .admin-tabs button { background: none; border: none; color: rgba(255,255,255,0.6); cursor: pointer; padding: 0.5rem 0; font-weight: 600; border-bottom: 2px solid transparent; } .admin-tabs button.active { color: #fff; border-color: #fff; }
+.post-form { display: flex; flex-direction: column; gap: 1.5rem; padding: 2rem; max-width: 800px; } .post-form label { display: flex; flex-direction: column; gap: 0.5rem; font-weight: 600; } .post-form input, .post-form textarea { padding: 0.75rem; border: 1px solid #ccc; border-radius: 4px; font-family: inherit; }
+.posts-list { padding: 2rem; display: grid; gap: 1rem; } .post-item { background: #f9f9f9; padding: 1.5rem; border-radius: 8px; border: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; } .post-item strong { display: block; font-size: 1.1rem; color: #111; margin-bottom: 0.25rem;} .post-item button { cursor: pointer; background: #001759; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; font-weight: 600; }

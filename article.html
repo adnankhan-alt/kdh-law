@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#001759">
+  <title>Article | KDH Advocates LLP</title>
+  <link rel="icon" type="image/png" sizes="256x256" href="assets/kdh-favicon.png">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .article-container { max-width: 800px; margin: 0 auto; padding: 8rem 5% 4rem; }
+    .article-header { margin-bottom: 3rem; text-align: center; }
+    .article-header h1 { font-family: 'Playfair Display', serif; font-size: 2.5rem; color: #001759; margin-bottom: 1rem; }
+    .article-meta { color: #666; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.85rem; }
+    .article-content { font-size: 1.1rem; line-height: 1.8; color: #222; }
+    .article-content h2 { font-family: 'Playfair Display', serif; color: #001759; margin-top: 2rem; margin-bottom: 1rem; }
+    .article-content p { margin-bottom: 1.5rem; }
+    .article-content ul { margin-bottom: 1.5rem; padding-left: 2rem; }
+    .back-link { display: inline-block; margin-top: 3rem; font-weight: 600; color: #d4af37; text-decoration: none; }
+    .back-link:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand brand-logo" href="/" aria-label="KDH Advocates home">
+      <img src="assets/kdh-law-logo-transparent.png" alt="KDH Advocates LLP">
+    </a>
+    <nav id="nav">
+      <a href="/insights.html">All Insights</a>
+    </nav>
+  </header>
+
+  <main id="main">
+    <article class="article-container" id="article-container">
+      <div style="text-align:center; padding: 4rem;">Loading article...</div>
+    </article>
+  </main>
+
+  <footer>
+    <div class="footer-bottom">
+      <small>&copy; 2026 KDH Advocates LLP. All rights reserved.</small>
+      <p>Trust. Integrity. Results.</p>
+    </div>
+  </footer>
+
+  <script>
+    async function loadArticle() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const slug = urlParams.get('slug');
+      const container = document.getElementById("article-container");
+      
+      if (!slug) {
+        container.innerHTML = "<h2>Article not found</h2>";
+        return;
+      }
+      
+      try {
+        const res = await fetch("/api/posts");
+        const posts = await res.json();
+        const post = posts.find(p => p.slug === slug);
+        
+        if (!post) throw new Error("Not found");
+        
+        document.title = post.title + " | KDH Advocates LLP";
+        
+        container.innerHTML = `
+          <header class="article-header">
+            <div class="article-meta">${new Date(post.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
+            <h1>${post.title}</h1>
+          </header>
+          <div class="article-content">
+            ${post.content}
+          </div>
+          <a href="/insights.html" class="back-link">&larr; Back to all insights</a>
+        `;
+      } catch (e) {
+        container.innerHTML = "<h2>Unable to load article.</h2>";
+      }
+    }
+    loadArticle();
+  </script>
+</body>
+</html>
