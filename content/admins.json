@@ -4,6 +4,11 @@
       "login": "adnankhan-alt",
       "role": "admin",
       "enabled": true
+    },
+    {
+      "login": "elxholdings",
+      "role": "admin",
+      "enabled": true
     }
   ]
 }
