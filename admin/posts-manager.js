@@ -30,44 +30,48 @@ let editingSha = null;
 let quill;
 
 // Initialize Quill Editor (Bubble theme for medium-style distraction free)
-if (document.getElementById('post-editor-quill')) {
-  quill = new Quill('#post-editor-quill', {
-    theme: 'bubble',
-    placeholder: 'Highlight text to see formatting options. Drag and drop images here...',
-    modules: {
-      toolbar: [
-        ['bold', 'italic', 'underline', 'strike'],
-        [{ 'header': 1 }, { 'header': 2 }],
-        ['blockquote', 'code-block'],
-        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-        ['link', 'image', 'video'],
-        ['clean']
-      ]
-    }
-  });
-
-  // Handle inline image uploads in Quill
-  quill.getModule('toolbar').addHandler('image', () => {
-    const input = document.createElement('input');
-    input.setAttribute('type', 'file');
-    input.setAttribute('accept', 'image/*');
-    input.click();
-
-    input.onchange = async () => {
-      const file = input.files[0];
-      if (file) {
-        document.getElementById('status').textContent = 'Uploading image...';
-        const url = await uploadFile(file);
-        if (url) {
-          const range = quill.getSelection(true);
-          quill.insertEmbed(range.index, 'image', url);
-          document.getElementById('status').textContent = '';
-        } else {
-          document.getElementById('status').textContent = 'Image upload failed';
-        }
+try {
+  if (document.getElementById('post-editor-quill') && typeof Quill !== 'undefined') {
+    quill = new Quill('#post-editor-quill', {
+      theme: 'bubble',
+      placeholder: 'Highlight text to see formatting options. Drag and drop images here...',
+      modules: {
+        toolbar: [
+          ['bold', 'italic', 'underline', 'strike'],
+          [{ 'header': 1 }, { 'header': 2 }],
+          ['blockquote', 'code-block'],
+          [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+          ['link', 'image', 'video'],
+          ['clean']
+        ]
       }
-    };
-  });
+    });
+
+    // Handle inline image uploads in Quill
+    quill.getModule('toolbar').addHandler('image', () => {
+      const input = document.createElement('input');
+      input.setAttribute('type', 'file');
+      input.setAttribute('accept', 'image/*');
+      input.click();
+
+      input.onchange = async () => {
+        const file = input.files[0];
+        if (file) {
+          document.getElementById('status').textContent = 'Uploading image...';
+          const url = await uploadFile(file);
+          if (url) {
+            const range = quill.getSelection(true);
+            quill.insertEmbed(range.index, 'image', url);
+            document.getElementById('status').textContent = '';
+          } else {
+            document.getElementById('status').textContent = 'Image upload failed';
+          }
+        }
+      };
+    });
+  }
+} catch (err) {
+  console.error("Failed to initialize Quill editor:", err);
 }
 
 // Cover image upload handler
