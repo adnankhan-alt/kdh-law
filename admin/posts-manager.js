@@ -184,7 +184,7 @@ async function loadPosts() {
 
 function renderPosts() {
   if (currentPosts.length === 0) {
-    postsList.innerHTML = 'No articles found.';
+    postsList.innerHTML = 'No articles found. Click \'+ Open Posting Tools\' above to create one.';
     return;
   }
   postsList.innerHTML = currentPosts.map(p => {
@@ -345,3 +345,4 @@ btnAiGenerate?.addEventListener('click', async () => {
   }
   btnAiGenerate.disabled = false;
 });
+
