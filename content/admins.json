@@ -1,0 +1,9 @@
+{
+  "users": [
+    {
+      "login": "adnankhan-alt",
+      "role": "admin",
+      "enabled": true
+    }
+  ]
+}

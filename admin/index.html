@@ -3,126 +3,231 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="robots" content="noindex,nofollow">
-  <title>KDH Dashboard</title>
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <title>KDH CMS</title>
   <link rel="icon" type="image/png" href="/assets/kdh-favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;1,500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/admin/admin.css?v=4">
-<link href="https://cdn.quilljs.com/1.3.6/quill.bubble.css" rel="stylesheet"></head>
+  <link rel="stylesheet" href="https://cdn.quilljs.com/1.3.6/quill.bubble.css">
+  <link rel="stylesheet" href="/admin/admin.css?v=6">
+</head>
 <body>
   <section class="signin" id="signin">
     <img src="/assets/kdh-law-logo-transparent.png" alt="KDH Advocates LLP">
     <p class="eyebrow">Secure management</p>
     <h1>KDH Control Panel</h1>
-    <p>Sign in with the authorised GitHub account to manage the website and insights.</p>
-    <a class="primary" href="/api/cms/start">Continue with GitHub</a>
+    <p>Manage the homepage, articles, team, practice areas, enquiries, SEO and website analytics.</p>
+
+    <div class="signin-actions">
+      <a class="primary" href="/api/cms/start">Continue with GitHub</a>
+      <span>or</span>
+      <form id="keyword-form" class="keyword-form">
+        <label for="keyword-input">Secure access keyword</label>
+        <div>
+          <input id="keyword-input" type="password" autocomplete="current-password" placeholder="Enter access keyword">
+          <button class="secondary" type="submit">Open CMS</button>
+        </div>
+      </form>
+    </div>
+    <p class="signin-help">Secure URL access also supports <code>/admin/#access=YOUR_KEYWORD</code>. The keyword is exchanged for a protected CMS session and removed from the address bar.</p>
+    <p class="signin-error" id="signin-error" role="alert"></p>
   </section>
 
   <div class="workspace" id="workspace" hidden>
-    <!-- Sidebar Menu -->
-    <div class="sidebar-overlay" id="sidebar-overlay"></div><aside class="sidebar" id="sidebar">
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <aside class="sidebar" id="sidebar" aria-label="CMS navigation">
       <div class="sidebar-brand">
-        <a href="/" target="_blank"><img src="/assets/kdh-law-logo-transparent.png" alt="KDH"></a>
+        <a href="/" target="_blank" rel="noopener"><img src="/assets/kdh-law-logo-transparent.png" alt="KDH"></a>
+        <span>Website CMS</span>
       </div>
       <nav class="sidebar-nav">
-        <button class="menu-item active" data-target="view-dashboard">🏠 Dashboard</button>
-        <button class="menu-item" data-target="view-home">📝 Live Editor</button>
-        <button class="menu-item" data-target="view-insights">📰 Posting Manager</button>
-        <button class="menu-item" data-target="view-settings">⚙️ Settings</button>
+        <button class="menu-item active" data-target="view-dashboard" type="button"><span>⌂</span> Dashboard</button>
+        <button class="menu-item" data-target="view-home" type="button"><span>✎</span> Live Editor</button>
+        <button class="menu-item" data-target="view-insights" type="button"><span>▤</span> Articles</button>
+        <button class="menu-item" data-target="view-team" type="button"><span>♙</span> Attorneys</button>
+        <button class="menu-item" data-target="view-practices" type="button"><span>§</span> Practice Areas</button>
+        <button class="menu-item" data-target="view-enquiries" type="button"><span>✉</span> Enquiries</button>
+        <button class="menu-item" data-target="view-analytics" type="button"><span>⌁</span> Analytics</button>
+        <button class="menu-item" data-target="view-seo" type="button"><span>◎</span> SEO</button>
+        <button class="menu-item admin-only" data-target="view-admins" type="button"><span>♚</span> Access & Roles</button>
+        <button class="menu-item" data-target="view-settings" type="button"><span>⚙</span> Settings</button>
       </nav>
       <div class="sidebar-footer">
-        <p id="identity" style="font-size: 0.8rem; opacity: 0.7; margin-bottom: 0.5rem;"></p>
-        <button class="quiet" id="logout" type="button" style="width: 100%; text-align:left;">Sign out</button>
+        <p id="identity"></p>
+        <p id="role-label"></p>
+        <button class="quiet quiet-on-dark" id="logout" type="button">Sign out</button>
       </div>
     </aside>
 
-    <!-- Main Content Area -->
+    <button class="hamburger" id="hamburger" type="button" aria-label="Open CMS menu" aria-expanded="false">☰</button>
+    <p id="status" class="status-toast" role="status" aria-live="polite"></p>
+
     <main class="main-content">
-      <header class="topbar">
-        <button class="hamburger" id="hamburger">☰</button><div id="topbar-title">Live Site Editor</div>
-        <p id="status" role="status" aria-live="polite"></p>
-        <button class="primary" id="save" type="button">Save Homepage</button>
-      </header>
-
-      <!-- View: Dashboard Landing -->
-      <div class="editor-stage view-section active" id="view-dashboard" style=" flex-direction: column; align-items: center; justify-content: center; text-align: center; background: white; padding: 4rem 2rem;">
-        <img src="/assets/kdh-law-logo-transparent.png" alt="KDH" style="max-width: 200px; margin-bottom: 2rem; filter: invert(1); opacity: 0.8;">
-        <h1 style="font-family: 'Playfair Display', serif; color: #001759; margin-bottom: 1rem;">Admin CMS</h1>
-        <p style="max-width: 600px; color: #555; font-size: 1.1rem; margin-bottom: 3rem;">Welcome to the KDH Advocates Control Panel. Use the hamburger menu in the top left to navigate between the Live Editor, Posting Manager, and Settings.</p>
-        <div style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;">
-          <button class="primary" onclick="document.querySelector('[data-target=\'view-home\']').click()">Open Live Editor</button>
-          <button class="primary" onclick="document.querySelector('[data-target=\'view-insights\']').click()" style="background: #001759; color: white;">Manage Articles</button>
+      <section class="view-section active dashboard-view" id="view-dashboard">
+        <div class="page-shell dashboard-shell">
+          <div class="page-heading">
+            <p class="eyebrow">KDH Advocates LLP</p>
+            <h1>Website dashboard</h1>
+            <p>Content changes are versioned in GitHub and deploy through Vercel. Media is stored in Vercel Blob.</p>
+          </div>
+          <div class="metric-grid" id="dashboard-metrics">
+            <article><span>Articles</span><strong id="metric-posts">—</strong></article>
+            <article><span>Attorneys</span><strong id="metric-team">—</strong></article>
+            <article><span>Practice areas</span><strong id="metric-practices">—</strong></article>
+            <article><span>New enquiries</span><strong id="metric-enquiries">—</strong></article>
+          </div>
+          <div class="quick-grid">
+            <button class="quick-card" data-open-view="view-home" type="button"><b>Edit homepage</b><span>Change text, images and links visually.</span></button>
+            <button class="quick-card" data-open-view="view-insights" type="button"><b>Publish an article</b><span>Write, generate, draft, schedule or publish insights.</span></button>
+            <button class="quick-card" data-open-view="view-team" type="button"><b>Manage attorneys</b><span>Add profiles, roles, expertise, biographies and portraits.</span></button>
+            <button class="quick-card" data-open-view="view-enquiries" type="button"><b>Review enquiries</b><span>Track new consultation requests and internal notes.</span></button>
+          </div>
         </div>
-      </div>
+      </section>
 
-      <!-- View: Home Editor -->
-      <div class="editor-stage view-section" id="view-home">
-        <button class="primary" id="save" type="button" style="position: absolute; top: 1.5rem; right: 1.5rem; z-index: 110; border-radius: 24px; padding: 0.8rem 1.5rem; box-shadow: 0 4px 16px rgba(0,0,0,0.25);">Save Homepage</button>
+      <section class="view-section" id="view-home">
+        <button class="primary save-homepage" id="save-homepage" type="button">Save Homepage</button>
         <div class="editor-note">
           <b>Editing mode</b>
           <span>Click text to type, click an image, or Shift-click a link to edit its destination.</span>
         </div>
         <iframe id="site-frame" title="Editable KDH homepage" src="/?cms=visual"></iframe>
-      </div>
+      </section>
 
-      <!-- View: Insights List -->
-      <div class="editor-stage view-section" id="view-insights">
-        <div class="editor-note">
-          <b>Articles Manager</b>
-          <span>Create, edit, or use AI to generate legal insights.</span>
-          <button class="primary" id="btn-new-post" style="margin-left: auto; padding: 1rem 2rem; font-size: 1.1rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">+ Open Posting Tools</button>
+      <section class="view-section" id="view-insights">
+        <div class="page-shell">
+          <div class="page-heading with-action">
+            <div><p class="eyebrow">Insights</p><h2>Articles</h2><p>Draft, schedule and publish legal insights.</p></div>
+            <button class="primary" id="btn-new-post" type="button">+ New Article</button>
+          </div>
+          <div class="filter-row">
+            <select id="post-status-filter" aria-label="Filter articles by status">
+              <option value="all">All statuses</option>
+              <option value="published">Published</option>
+              <option value="draft">Drafts</option>
+              <option value="scheduled">Scheduled</option>
+            </select>
+          </div>
+          <div class="posts-list" id="posts-list">Loading articles…</div>
         </div>
-        <div class="posts-list" id="posts-list">Loading articles...</div>
-      </div>
+      </section>
 
-      <!-- View: Post Editor -->
-      <div class="editor-stage view-section" id="view-post-editor">
-        <div class="editor-note">
-          <b>Edit Article</b>
-          <div style="margin-left: auto;">
-            <button class="quiet" id="btn-cancel-post">Cancel</button>
-            <button class="primary" id="btn-ai-generate">✨ Auto-Generate with AI</button>
+      <section class="view-section" id="view-post-editor">
+        <div class="page-shell narrow-shell">
+          <div class="page-heading with-action sticky-heading">
+            <div><p class="eyebrow">Article editor</p><h2 id="post-editor-heading">New article</h2></div>
+            <div class="button-row"><button class="quiet" id="btn-cancel-post" type="button">Cancel</button><button class="secondary" id="btn-ai-generate" type="button">✨ Generate with AI</button></div>
+          </div>
+          <div class="post-form">
+            <div class="form-grid two-col">
+              <label>Title<input id="post-title" maxlength="180"></label>
+              <label>URL slug<input id="post-slug" maxlength="120" placeholder="e.g. new-data-laws"></label>
+            </div>
+            <label>Summary<textarea id="post-summary" rows="3" maxlength="800"></textarea></label>
+            <div class="form-grid two-col">
+              <label>Author<input id="post-author" maxlength="140" placeholder="KDH Advocates LLP"></label>
+              <label>Status<select id="post-status"><option value="draft">Draft</option><option value="published">Published</option><option value="scheduled">Scheduled</option></select></label>
+            </div>
+            <label id="schedule-field" hidden>Publish date & time<input type="datetime-local" id="post-scheduled-at"></label>
+            <label>Cover image
+              <input type="file" id="post-cover-upload" accept="image/*">
+              <input type="hidden" id="post-cover">
+              <img id="post-cover-preview" class="cover-preview" hidden alt="Article cover preview">
+            </label>
+            <div>
+              <label class="standalone-label">Body content</label>
+              <div id="post-editor-quill" class="quill-editor"></div>
+              <textarea id="post-content-fallback" rows="16" hidden></textarea>
+            </div>
+            <details class="advanced-panel">
+              <summary>Article SEO</summary>
+              <div class="advanced-body">
+                <label>SEO title<input id="post-seo-title" maxlength="180"></label>
+                <label>SEO description<textarea id="post-seo-description" rows="3" maxlength="500"></textarea></label>
+              </div>
+            </details>
+            <div class="button-row form-actions">
+              <button class="primary" id="btn-save-post" type="button">Save Article</button>
+              <button class="danger" id="btn-delete-post" type="button" hidden>Delete Article</button>
+            </div>
           </div>
         </div>
-        <div class="post-form">
-          <label>Title<input id="post-title"></label>
-          <label>URL Slug<input id="post-slug" placeholder="e.g. new-data-laws"></label>
-          <label>Cover Image<input type="file" id="post-cover-upload" accept="image/*"><input type="hidden" id="post-cover"><img id="post-cover-preview" style="max-width:200px; display:none; border-radius:4px;"/></label><label>Summary<textarea id="post-summary" rows="2"></textarea></label>
-          <label>Body Content</label><div id="post-editor-quill" style="min-height: 400px; font-size: 1.1rem; border: 1px solid #ccc; border-radius: 4px; padding: 1rem; background: #fff;"></div>
-          <button class="primary" id="btn-save-post">Save and Publish Post</button>
-          <button class="quiet" id="btn-delete-post" style="color: red;">Delete Post</button>
-        </div>
-      </div>
+      </section>
 
-      <!-- View: Settings -->
-      <div class="editor-stage view-section" id="view-settings">
-        <div class="post-form">
-          <h2>Dashboard Settings</h2>
-          <p>Configure external integrations.</p>
-          <label style="margin-top: 1rem;">
-            Google Gemini API Key
-            <input type="password" id="gemini-key" placeholder="AIzaSy...">
-            <small style="font-weight: normal; opacity: 0.8; margin-top: 0.25rem;">This is securely saved in your browser's local storage.</small>
-          </label>
-          <button class="primary" id="btn-save-settings" style="width: fit-content; margin-top: 1rem;">Save Settings</button>
+      <section class="view-section" id="view-team">
+        <div class="page-shell">
+          <div class="page-heading with-action"><div><p class="eyebrow">People</p><h2>Attorneys & profiles</h2><p>Control the team cards and full biographies shown on the website.</p></div><button class="primary" id="btn-add-team" type="button">+ Add Attorney</button></div>
+          <div id="team-manager" class="repeat-manager"></div>
+          <div class="save-footer"><button class="primary" id="btn-save-team" type="button">Save Attorneys</button></div>
         </div>
-      </div>
+      </section>
+
+      <section class="view-section" id="view-practices">
+        <div class="page-shell">
+          <div class="page-heading with-action"><div><p class="eyebrow">Expertise</p><h2>Practice areas</h2><p>Edit, reorder and add the services displayed in the practice accordion.</p></div><button class="primary" id="btn-add-practice" type="button">+ Add Practice Area</button></div>
+          <div id="practice-manager" class="repeat-manager"></div>
+          <div class="save-footer"><button class="primary" id="btn-save-practices" type="button">Save Practice Areas</button></div>
+        </div>
+      </section>
+
+      <section class="view-section" id="view-enquiries">
+        <div class="page-shell">
+          <div class="page-heading"><p class="eyebrow">Consultations</p><h2>Enquiries</h2><p>Private consultation requests are kept out of GitHub and stored in the private CMS data store.</p></div>
+          <div id="enquiries-list" class="enquiries-list">Open this section to load enquiries.</div>
+        </div>
+      </section>
+
+      <section class="view-section" id="view-analytics">
+        <div class="page-shell">
+          <div class="page-heading"><p class="eyebrow">First-party metrics</p><h2>Analytics</h2><p>Privacy-light page-view totals are collected only after the visitor accepts analytics cookies.</p></div>
+          <div class="metric-grid"><article><span>Views · last 30 days</span><strong id="analytics-total">—</strong></article><article><span>Top page</span><strong id="analytics-top-page" class="metric-small">—</strong></article></div>
+          <div class="analytics-grid"><section class="panel"><h3>Daily views</h3><div id="analytics-days"></div></section><section class="panel"><h3>Top pages</h3><div id="analytics-pages"></div></section></div>
+          <div class="panel analytics-controls"><label><span><input id="analytics-enabled" type="checkbox" checked> Enable consent-based first-party analytics</span></label><button class="primary" id="btn-save-analytics-settings" type="button">Save Analytics Settings</button></div>
+        </div>
+      </section>
+
+      <section class="view-section" id="view-seo">
+        <div class="page-shell narrow-shell">
+          <div class="page-heading"><p class="eyebrow">Search visibility</p><h2>Homepage SEO</h2><p>These settings update site data and synchronise the static homepage metadata in GitHub.</p></div>
+          <div class="post-form">
+            <label>SEO title<input id="seo-title" maxlength="180"></label>
+            <label>Meta description<textarea id="seo-description" rows="4" maxlength="500"></textarea></label>
+            <label>Canonical URL<input id="seo-canonical" type="url"></label>
+            <label>Social sharing image URL<input id="seo-og-image"></label>
+            <label>Robots directive<select id="seo-robots"><option value="index,follow">Index and follow</option><option value="noindex,nofollow">No index, no follow</option></select></label>
+            <button class="primary" id="btn-save-seo" type="button">Save SEO Settings</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="view-section" id="view-admins">
+        <div class="page-shell narrow-shell">
+          <div class="page-heading with-action"><div><p class="eyebrow">Security</p><h2>GitHub access & roles</h2><p>Manage which GitHub accounts can enter the CMS and what they can do.</p></div><button class="primary" id="btn-add-admin" type="button">+ Add GitHub User</button></div>
+          <div id="admins-manager" class="repeat-manager"></div>
+          <div class="role-help"><b>Viewer:</b> read-only CMS access. <b>Editor:</b> can update content and enquiries. <b>Admin:</b> can also manage access.</div>
+          <div class="save-footer"><button class="primary" id="btn-save-admins" type="button">Save Access Roles</button></div>
+        </div>
+      </section>
+
+      <section class="view-section" id="view-settings">
+        <div class="page-shell narrow-shell">
+          <div class="page-heading"><p class="eyebrow">Integrations</p><h2>Settings</h2></div>
+          <div class="post-form">
+            <label>Google Gemini API key<input type="password" id="gemini-key" placeholder="AIzaSy…"><small>Stored only in this browser's localStorage and sent to the generation endpoint when you request AI content.</small></label>
+            <button class="primary" id="btn-save-settings" type="button">Save Browser Settings</button>
+            <div class="settings-note"><h3>URL keyword gateway</h3><p>The secret itself is configured as the Vercel environment variable <code>ADMIN_ACCESS_KEY</code>. It is never written into this repository.</p><code>https://www.kdhadvocates.com/admin/#access=YOUR_KEYWORD</code></div>
+          </div>
+        </div>
+      </section>
     </main>
 
-    <!-- Legacy Asset Panel (for Homepage Editor) -->
     <aside class="asset-panel" id="asset-panel" hidden>
-      <div class="asset-head">
-        <div>
-          <span id="asset-kind">Selected item</span>
-          <strong id="asset-title">Edit details</strong>
-        </div>
-        <button id="asset-close" type="button" aria-label="Close editing panel">×</button>
-      </div>
+      <div class="asset-head"><div><span id="asset-kind">Selected item</span><strong id="asset-title">Edit details</strong></div><button id="asset-close" type="button" aria-label="Close editing panel">×</button></div>
       <div id="image-fields" hidden>
         <label>Image URL or site path<input id="image-src" placeholder="/assets/example.webp"></label>
         <label>Accessible description<textarea id="image-alt" rows="3"></textarea></label>
+        <label>Upload replacement <input id="image-upload" type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/avif"><small>Maximum 3 MB.</small></label>
         <button class="primary" id="image-apply" type="button">Apply image</button>
       </div>
       <div id="link-fields" hidden>
@@ -131,17 +236,9 @@
       </div>
     </aside>
   </div>
-  
-  <script src="/admin/admin.js?v=4"></script>
+
+  <script src="/admin/admin.js?v=6"></script>
   <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
-  <script src="/admin/posts-manager.js?v=4"></script>
+  <script src="/admin/posts-manager.js?v=6"></script>
 </body>
 </html>
-
-
-
-
-
-
-
-

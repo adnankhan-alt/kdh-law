@@ -26,7 +26,7 @@
       <img src="assets/kdh-law-logo-transparent.png" alt="KDH Advocates LLP">
     </a>
     <nav id="nav">
-      <a href="/insights.html">All Insights</a>
+      <a href="/insights">All Insights</a>
     </nav>
   </header>
 
@@ -44,41 +44,119 @@
   </footer>
 
   <script>
+    function setMeta(name, content) {
+      let meta = document.querySelector(`meta[name="${name}"]`);
+      if (!meta) {
+        meta = document.createElement("meta");
+        meta.name = name;
+        document.head.appendChild(meta);
+      }
+      meta.content = content;
+    }
+
+    function setProperty(property, content) {
+      let meta = document.querySelector(`meta[property="${property}"]`);
+      if (!meta) {
+        meta = document.createElement("meta");
+        meta.setAttribute("property", property);
+        document.head.appendChild(meta);
+      }
+      meta.content = content;
+    }
+
+    function setCanonical(url) {
+      let link = document.querySelector('link[rel="canonical"]');
+      if (!link) {
+        link = document.createElement('link');
+        link.rel = 'canonical';
+        document.head.appendChild(link);
+      }
+      link.href = url;
+    }
+
+    function safeArticleFragment(html) {
+      const template = document.createElement('template');
+      template.innerHTML = String(html || '');
+      template.content.querySelectorAll('script,style,object,embed,form,input,button,meta,link,base,svg,math').forEach((node) => node.remove());
+      template.content.querySelectorAll('*').forEach((node) => {
+        [...node.attributes].forEach((attribute) => {
+          const name = attribute.name.toLowerCase();
+          const value = attribute.value.trim();
+          if (name.startsWith('on')) node.removeAttribute(attribute.name);
+          if ((name === 'href' || name === 'src') && /^(javascript|vbscript):/i.test(value)) node.removeAttribute(attribute.name);
+          if (name === 'href' && /^data:/i.test(value)) node.removeAttribute(attribute.name);
+        });
+        if (node.tagName === 'A' && node.getAttribute('target') === '_blank') node.setAttribute('rel', 'noopener noreferrer');
+        if (node.tagName === 'IFRAME') {
+          const src = node.getAttribute('src') || '';
+          const allowed = /^https:\/\/(www\.)?(youtube\.com\/embed\/|player\.vimeo\.com\/video\/)/i.test(src);
+          if (!allowed) node.remove();
+          else node.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-presentation');
+        }
+      });
+      return template.content;
+    }
+
     async function loadArticle() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const slug = urlParams.get('slug');
+      const slug = new URLSearchParams(window.location.search).get("slug");
       const container = document.getElementById("article-container");
-      
       if (!slug) {
         container.innerHTML = "<h2>Article not found</h2>";
         return;
       }
-      
+
       try {
         const res = await fetch("/api/posts");
+        if (!res.ok) throw new Error("Unable to load posts");
         const posts = await res.json();
-        const post = posts.find(p => p.slug === slug);
-        
+        const post = posts.find((item) => item.slug === slug);
         if (!post) throw new Error("Not found");
-        
-        document.title = post.title + " | KDH Advocates LLP";
-        
+
+        const seoTitle = post.seoTitle || post.title;
+        const seoDescription = post.seoDescription || post.summary || '';
+        const canonical = `https://www.kdhadvocates.com/article?slug=${encodeURIComponent(post.slug)}`;
+        document.title = `${seoTitle} | KDH Advocates LLP`;
+        if (seoDescription) setMeta("description", seoDescription);
+        setProperty('og:title', seoTitle);
+        if (seoDescription) setProperty('og:description', seoDescription);
+        setProperty('og:type', 'article');
+        setProperty('og:url', canonical);
+        if (post.coverImage) setProperty('og:image', post.coverImage);
+        setMeta('twitter:card', post.coverImage ? 'summary_large_image' : 'summary');
+        setMeta('twitter:title', seoTitle);
+        if (seoDescription) setMeta('twitter:description', seoDescription);
+        if (post.coverImage) setMeta('twitter:image', post.coverImage);
+        setCanonical(canonical);
+
         if (post.coverImage) {
-          document.getElementById("article-hero-container").innerHTML = `<img src="${post.coverImage}" class="article-hero" alt="${post.title}">`;
-          document.getElementById("nav").classList.add("scrolled"); // Ensure nav is visible over hero if needed
+          const hero = document.createElement("img");
+          hero.src = post.coverImage;
+          hero.className = "article-hero";
+          hero.alt = post.title || "KDH Advocates article";
+          document.getElementById("article-hero-container").replaceChildren(hero);
         }
-        
-        container.innerHTML = `
-          <header class="article-header">
-            <div class="article-meta">${new Date(post.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
-            <h1>${post.title}</h1>
-          </header>
-          <div class="article-content">
-            ${post.content}
-          </div>
-          <a href="/insights.html" class="back-link">&larr; Back to all insights</a>
-        `;
-      } catch (e) {
+
+        container.replaceChildren();
+        const header = document.createElement("header");
+        header.className = "article-header";
+        const meta = document.createElement("div");
+        meta.className = "article-meta";
+        meta.textContent = new Date(post.date || post.scheduledAt || Date.now()).toLocaleDateString("en-GB", { year: "numeric", month: "long", day: "numeric" });
+        const title = document.createElement("h1");
+        title.textContent = post.title || "Insight";
+        header.append(meta, title);
+
+        const content = document.createElement("div");
+        content.className = "article-content";
+        // Rich article HTML is sanitized again in the browser before insertion.
+        content.replaceChildren(safeArticleFragment(post.content || ""));
+
+        const back = document.createElement("a");
+        back.href = "/insights";
+        back.className = "back-link";
+        back.textContent = "← Back to all insights";
+        container.append(header, content, back);
+      } catch {
         container.innerHTML = "<h2>Unable to load article.</h2>";
       }
     }

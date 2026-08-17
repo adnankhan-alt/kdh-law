@@ -16,6 +16,13 @@
     .insight-card a { font-weight: 600; color: #d4af37; text-decoration: none; }
     .insight-card a:hover { text-decoration: underline; }
   </style>
+  <meta name="robots" content="index,follow">
+  <meta property="og:title" content="Insights | KDH Advocates LLP">
+  <meta property="og:description" content="Insights, news, and articles from KDH Advocates LLP.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://www.kdhadvocates.com/insights">
+  <meta name="twitter:card" content="summary">
+  <link rel="canonical" href="https://www.kdhadvocates.com/insights">
 </head>
 <body>
   <header class="site-header">
@@ -50,24 +57,43 @@
       const grid = document.getElementById("insights-grid");
       try {
         const res = await fetch("/api/posts");
+        if (!res.ok) throw new Error("Unable to load posts");
         const posts = await res.json();
-        if (posts.length === 0) {
-          grid.innerHTML = "<p>No insights published yet.</p>";
+        grid.replaceChildren();
+        if (!posts.length) {
+          const empty = document.createElement("p");
+          empty.textContent = "No insights published yet.";
+          grid.appendChild(empty);
           return;
         }
-        grid.innerHTML = posts.map(p => `
-          <article class="insight-card">
-            ${p.coverImage ? `<img src="${p.coverImage}" class="insight-card-img" alt="${p.title}">` : '}
-            <div class="insight-card-body">
-              <small>${new Date(p.date).toLocaleDateString()}</small>
-              <h3>${p.title}</h3>
-              <p>${p.summary}</p>
-              <a href="/article.html?slug=${p.slug}">Read article &rarr;</a>
-            </div>
-          </article>
-        `).join("");
-      } catch (e) {
-        grid.innerHTML = "<p>Unable to load insights.</p>";
+
+        posts.forEach((post) => {
+          const article = document.createElement("article");
+          article.className = "insight-card";
+          if (post.coverImage) {
+            const image = document.createElement("img");
+            image.src = post.coverImage;
+            image.className = "insight-card-img";
+            image.alt = post.title || "KDH Advocates article";
+            article.appendChild(image);
+          }
+          const body = document.createElement("div");
+          body.className = "insight-card-body";
+          const date = document.createElement("small");
+          date.textContent = new Date(post.date || post.scheduledAt || Date.now()).toLocaleDateString();
+          const title = document.createElement("h3");
+          title.textContent = post.title || "Insight";
+          const summary = document.createElement("p");
+          summary.textContent = post.summary || "";
+          const link = document.createElement("a");
+          link.href = `/article?slug=${encodeURIComponent(post.slug)}`;
+          link.textContent = "Read article →";
+          body.append(date, title, summary, link);
+          article.appendChild(body);
+          grid.appendChild(article);
+        });
+      } catch {
+        grid.textContent = "Unable to load insights.";
       }
     }
     loadInsights();

@@ -1,112 +1,136 @@
-const { session } = require("../_lib/session");
-const { put, list, del } = require("@vercel/blob");
+const {
+  deleteGitFile,
+  githubHeaders,
+  githubToken,
+  readGitJson,
+  repoName,
+  branchName,
+  requireCms,
+  sendError,
+  writeGitJson
+} = require('../_lib/cms');
 
-const defaultRepo = "adnankhan-alt/kdh-law";
+const POSTS_PATH = 'content/posts';
 
-function githubHeaders(token) {
-  return {
-    Accept: "application/vnd.github+json",
-    Authorization: `Bearer ${token}`,
-    "Content-Type": "application/json",
-    "User-Agent": "KDH-Website-CMS",
-    "X-GitHub-Api-Version": "2022-11-28"
-  };
+function validSlug(value) {
+  return /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(String(value || '')) && String(value).length <= 120;
+}
+
+function validPost(post) {
+  if (!post || !validSlug(post.slug)) return false;
+  if (typeof post.title !== 'string' || !post.title.trim() || post.title.length > 180) return false;
+  if (typeof post.summary !== 'string' || post.summary.length > 800) return false;
+  if (typeof post.content !== 'string' || !post.content.trim() || post.content.length > 250000) return false;
+  if (typeof post.coverImage !== 'string' || post.coverImage.length > 2000) return false;
+  if (!['draft', 'published', 'scheduled'].includes(post.status)) return false;
+  if (post.status === 'scheduled' && Number.isNaN(Date.parse(post.scheduledAt || ''))) return false;
+  if (typeof post.seoTitle !== 'string' || post.seoTitle.length > 180) return false;
+  if (typeof post.seoDescription !== 'string' || post.seoDescription.length > 500) return false;
+  return true;
+}
+
+async function listPosts(current) {
+  const token = githubToken(current);
+  const endpoint = `https://api.github.com/repos/${repoName()}/contents/${POSTS_PATH}?ref=${encodeURIComponent(branchName())}`;
+  const response = await fetch(endpoint, { headers: githubHeaders(token) });
+  if (response.status === 404) return [];
+  const files = await response.json().catch(() => []);
+  if (!response.ok) {
+    const error = new Error(files.message || 'Unable to read the article directory.');
+    error.statusCode = response.status;
+    throw error;
+  }
+
+  const jsonFiles = files.filter((file) => file.type === 'file' && file.name.endsWith('.json')).slice(0, 100);
+  const posts = await Promise.all(jsonFiles.map(async (file) => {
+    try {
+      const result = await readGitJson(current, file.path);
+      const post = result.data || {};
+      return {
+        slug: post.slug || file.name.replace(/\.json$/i, ''),
+        title: post.title || file.name,
+        summary: post.summary || '',
+        status: post.status || 'published',
+        date: post.date || null,
+        scheduledAt: post.scheduledAt || null,
+        coverImage: post.coverImage || '',
+        sha: result.sha
+      };
+    } catch {
+      return null;
+    }
+  }));
+  return posts.filter(Boolean).sort((a, b) => {
+    const aTime = a.status === 'scheduled' && a.scheduledAt ? a.scheduledAt : (a.date || 0);
+    const bTime = b.status === 'scheduled' && b.scheduledAt ? b.scheduledAt : (b.date || 0);
+    return new Date(bTime) - new Date(aTime);
+  });
 }
 
 module.exports = async function handler(req, res) {
-  const current = session(req);
-  if (!current) return res.status(401).json({ error: "Sign in is required." });
+  const minimumRole = req.method === 'GET' ? 'viewer' : 'editor';
+  const current = requireCms(req, res, minimumRole);
+  if (!current) return;
+  res.setHeader('Cache-Control', 'no-store');
 
-  const repo = process.env.CMS_GITHUB_REPO || defaultRepo;
-
-  if (req.method === "GET") {
-    try {
-      const endpoint = `https://api.github.com/repos/${repo}/contents/content/posts?ref=main`;
-      const ghRes = await fetch(endpoint, { headers: githubHeaders(current.token) });
-      if (ghRes.status === 404) return res.status(200).json([]);
-      if (!ghRes.ok) throw new Error("Could not fetch posts");
-      
-      const files = await ghRes.json();
-      const posts = files.filter(f => f.name.endsWith(".json")).map(f => ({
-        name: f.name,
-        path: f.path,
-        sha: f.sha
-      }));
-      return res.status(200).json(posts);
-    } catch (e) {
-      return res.status(500).json({ error: e.message });
-    }
-  }
-
-  if (req.method === "PUT") {
-    // Create or update post
-    const { slug, title, summary, content, date, sha, coverImage } = req.body;
-    if (!slug || !title || !content) return res.status(400).json({ error: "Missing required fields" });
-
-    const postData = { slug, title, summary, content, coverImage: coverImage || "", date: date || new Date().toISOString() };
-    const contentStr = JSON.stringify(postData, null, 2) + "\n";
-    const endpoint = `https://api.github.com/repos/${repo}/contents/content/posts/${slug}.json`;
-
-    const body = {
-      message: `Update post: ${slug}`,
-      content: Buffer.from(contentStr, "utf8").toString("base64"),
-      branch: "main"
-    };
-    if (sha) body.sha = sha;
-
-    const ghRes = await fetch(endpoint, {
-      method: "PUT",
-      headers: githubHeaders(current.token),
-      body: JSON.stringify(body)
-    });
-
-    const updated = await ghRes.json();
-    if (!ghRes.ok) {
-      return res.status(ghRes.status).json({ error: updated.message || "Failed to save post" });
+  try {
+    if (req.method === 'GET') {
+      const slug = String(req.query?.slug || '').trim();
+      if (slug) {
+        if (!validSlug(slug)) return res.status(400).json({ error: 'Invalid article slug.' });
+        const result = await readGitJson(current, `${POSTS_PATH}/${slug}.json`, { allowMissing: true });
+        if (!result) return res.status(404).json({ error: 'Article not found.' });
+        return res.status(200).json({ post: result.data, sha: result.sha });
+      }
+      return res.status(200).json(await listPosts(current));
     }
 
-    try {
-      await put(`kdh/posts/${slug}.json`, contentStr, {
-        access: "public",
-        addRandomSuffix: false,
-        contentType: "application/json"
-      });
-    } catch (e) {
-      // Vercel blob failure
-    }
+    if (req.method === 'PUT') {
+      const body = req.body || {};
+      const post = {
+        slug: String(body.slug || '').trim(),
+        title: String(body.title || '').trim(),
+        summary: String(body.summary || '').trim(),
+        content: String(body.content || ''),
+        coverImage: String(body.coverImage || '').trim(),
+        date: body.date && !Number.isNaN(Date.parse(body.date)) ? new Date(body.date).toISOString() : new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        status: String(body.status || 'draft'),
+        scheduledAt: body.scheduledAt && !Number.isNaN(Date.parse(body.scheduledAt)) ? new Date(body.scheduledAt).toISOString() : '',
+        author: String(body.author || '').trim().slice(0, 140),
+        seoTitle: String(body.seoTitle || '').trim(),
+        seoDescription: String(body.seoDescription || '').trim()
+      };
+      if (!validPost(post)) return res.status(400).json({ error: 'Please complete the required article fields correctly.' });
 
-    return res.status(200).json({ saved: true, commit: updated.commit?.sha, sha: updated.content?.sha });
-  }
-
-  if (req.method === "DELETE") {
-    const { slug, sha } = req.body;
-    if (!slug || !sha) return res.status(400).json({ error: "Missing slug or sha" });
-
-    const endpoint = `https://api.github.com/repos/${repo}/contents/content/posts/${slug}.json`;
-    const ghRes = await fetch(endpoint, {
-      method: "DELETE",
-      headers: githubHeaders(current.token),
-      body: JSON.stringify({
-        message: `Delete post: ${slug}`,
+      const path = `${POSTS_PATH}/${post.slug}.json`;
+      let sha = body.sha || null;
+      if (!sha) {
+        const existing = await readGitJson(current, path, { allowMissing: true });
+        sha = existing?.sha || null;
+      }
+      const updated = await writeGitJson(current, path, post, {
         sha,
-        branch: "main"
-      })
-    });
-
-    if (!ghRes.ok) {
-      const err = await ghRes.json();
-      return res.status(ghRes.status).json({ error: err.message || "Failed to delete post" });
+        message: `${sha ? 'Update' : 'Create'} article: ${post.slug}`
+      });
+      return res.status(200).json({
+        saved: true,
+        commit: updated.commit?.sha || null,
+        sha: updated.content?.sha || null,
+        post
+      });
     }
 
-    try {
-      await del(`kdh/posts/${slug}.json`);
-    } catch (e) {
-      // Ignore blob deletion failure
+    if (req.method === 'DELETE') {
+      const slug = String(req.body?.slug || '').trim();
+      const sha = String(req.body?.sha || '').trim();
+      if (!validSlug(slug) || !sha) return res.status(400).json({ error: 'Missing article slug or GitHub revision.' });
+      await deleteGitFile(current, `${POSTS_PATH}/${slug}.json`, sha, `Delete article: ${slug}`);
+      return res.status(200).json({ deleted: true });
     }
 
-    return res.status(200).json({ deleted: true });
+    return res.status(405).end();
+  } catch (error) {
+    return sendError(res, error, 'Unable to manage articles.');
   }
-
-  return res.status(405).end();
 };
-

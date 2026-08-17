@@ -18,5 +18,249 @@
     "email": "law@kdhadvocates.com",
     "phone": "+254 717 854798",
     "office": "IPS Building, 1st Floor, Kimathi Street, Nairobi"
+  },
+  "seo": {
+    "title": "KDH Advocates LLP | Trust. Integrity. Results.",
+    "description": "KDH Advocates LLP is a premier commercial law firm in Nairobi providing strategic legal advisory and dispute resolution across Africa.",
+    "canonical": "https://www.kdhadvocates.com/",
+    "ogImage": "https://www.kdhadvocates.com/assets/kdh-law-logo.jpg",
+    "robots": "index,follow"
+  },
+  "practices": [
+    {
+      "title": "Corporate & Commercial",
+      "intro": "Corporate and commercial services designed to support businesses at every stage of growth.",
+      "services": [
+        "Business formation, company registration, governance, and corporate structuring",
+        "Mergers, acquisitions, restructuring, and corporate reorganisations",
+        "Shareholder agreements, joint ventures, and strategic partnerships",
+        "Commercial contracts and transactions across sectors",
+        "Corporate governance and sector-specific regulatory compliance",
+        "Insolvency, liquidation, restructuring, and business rescue"
+      ]
+    },
+    {
+      "title": "Dispute Resolution",
+      "intro": "Strategic representation in domestic and international courts and tribunals, with a thorough assessment of legal and reputational risk.",
+      "services": [
+        "Commercial litigation and arbitration",
+        "Employment and labour relations disputes",
+        "Corporate and shareholder disputes",
+        "Constitutional and administrative law litigation",
+        "Land, environmental justice, debt recovery, and insolvency litigation",
+        "Insurance claims, defence, recovery, and related claims"
+      ]
+    },
+    {
+      "title": "Employment & Labour Relations",
+      "intro": "Advice for employers and employees across the full spectrum of workplace matters.",
+      "services": [
+        "Employment contracts, policies, benefits, and compensation structures",
+        "Workplace disputes, litigation, health, and safety compliance",
+        "Redundancies, terminations, and restructuring",
+        "Collective bargaining and industrial relations",
+        "Kenyan employment law compliance"
+      ]
+    },
+    {
+      "title": "Real Estate & Construction",
+      "intro": "Transactional, development, investment, finance, and dispute-resolution counsel for commercial and residential property.",
+      "services": [
+        "Acquisitions, sales, conveyancing, development, and joint ventures",
+        "Commercial and residential leases",
+        "Land use planning, zoning, and environmental compliance",
+        "Real estate finance and securitisation",
+        "Property disputes and construction contract management"
+      ]
+    },
+    {
+      "title": "Banking, Finance & Capital Markets",
+      "intro": "Finance and capital-markets advisory for institutions, lenders, borrowers, investors, issuers, underwriters, and market participants.",
+      "services": [
+        "Corporate and structured finance transactions",
+        "Syndicated lending, project finance, and asset financing",
+        "Securitisation and enforcement of securities",
+        "Banking regulatory compliance and risk management",
+        "Equity and debt offerings, private equity, venture capital, and private placements",
+        "Legal due diligence, restructuring, and corporate governance"
+      ]
+    },
+    {
+      "title": "International Trade & Investment",
+      "intro": "Strategic counsel for businesses engaged in cross-border trade and investment.",
+      "services": [
+        "International trade agreements and compliance",
+        "Foreign direct investment and multinational investment structuring",
+        "Import-export regulation, customs compliance, and trade finance",
+        "Risk mitigation and security documentation",
+        "Community benefit-sharing agreements",
+        "External market access training and investor aftercare"
+      ]
+    },
+    {
+      "title": "Climate Change & Sustainability",
+      "intro": "Legal support across environmental responsibility, sustainable investment, climate finance, and ESG.",
+      "services": [
+        "Environmental impact assessment and compliance",
+        "Corporate sustainability strategies and sustainable investment regulation",
+        "Social-impact projects and legal frameworks",
+        "Climate policy and carbon-trading regulation",
+        "Climate finance, project development, policy advocacy, and ESG reporting"
+      ]
+    },
+    {
+      "title": "Technology, Media, Telecoms & IP",
+      "intro": "Future-ready legal solutions at the intersection of technology, media, telecommunications, and intellectual property.",
+      "services": [
+        "Data protection, cybersecurity, and breach response",
+        "Patents, trademarks, copyrights, licensing, and enforcement",
+        "Technology, software, telecom, content, and media contracts",
+        "Telecom licensing, infrastructure, and regulatory compliance",
+        "Startup funding, scaling, regulation, and IP litigation"
+      ]
+    },
+    {
+      "title": "Tax",
+      "intro": "Practical advisory, compliance, structuring, and dispute-resolution solutions for a changing tax landscape.",
+      "services": [
+        "Corporate tax compliance, planning, and structuring",
+        "VAT, income tax, customs duty, and transfer pricing",
+        "International tax compliance",
+        "Tax disputes, litigation, risk assessment, and mitigation",
+        "Tax policy advocacy"
+      ]
+    },
+    {
+      "title": "Immigration",
+      "intro": "Tailored immigration advice for individuals, businesses, and multinational organisations establishing a presence in Kenya.",
+      "services": [
+        "Work permits and residency applications",
+        "Business and investor visa processing",
+        "Citizenship and naturalisation advice",
+        "Corporate immigration compliance",
+        "Deportation appeals and legal representation"
+      ]
+    },
+    {
+      "title": "Energy & Infrastructure",
+      "intro": "Trusted counsel for structuring and executing complex projects across Kenya's growing energy and infrastructure sectors.",
+      "services": [
+        "Energy law and regulatory compliance",
+        "Power purchase agreements and project finance",
+        "Oil, gas, and renewable energy advice",
+        "Public-private partnerships and government projects",
+        "Infrastructure contracts, concession agreements, and social-impact compliance"
+      ]
+    }
+  ],
+  "team": [
+    {
+      "id": "yvonne-kinya-kiruja",
+      "name": "Yvonne Kinya Kiruja",
+      "role": "Managing Partner",
+      "specialties": "Commercial, real estate, construction & finance",
+      "image": "assets/yvonne-kinya-kiruja.webp",
+      "alt": "Yvonne Kinya Kiruja, Managing Partner at KDH Advocates",
+      "qualifications": [
+        "LLB (Kenyatta University)",
+        "PGDip (Kenya School of Law)"
+      ],
+      "bio": [
+        "Yvonne is the Managing Partner at KDH Advocates and Head of the firm's Commercial and Real Estate Practice. She has extensive experience advising local and international clients on complex real estate, construction, and finance matters. Her work includes structuring development projects, arranging real estate finance, implementing securitisation frameworks, and guiding high-net-worth individuals through estate planning strategies.",
+        "Her experience at Ecobank gave her a strong foundation in securitisation and banking regulatory compliance. She works closely with financial institutions and SACCOs on compliant frameworks for securitisation, recovery, and governance, while also advising on structured finance, syndicated lending, project finance, asset financing, enforcement of securities, and capital raising.",
+        "Her real estate practice spans acquisitions, sales and conveyancing, property development and joint ventures, commercial and residential leases, land use planning, zoning, environmental compliance, construction contract management, and property disputes.",
+        "Yvonne combines transactional, advisory, and dispute-resolution expertise to serve property developers, financial institutions, and investment companies as a trusted adviser in Kenya's real estate and construction landscape."
+      ]
+    },
+    {
+      "id": "brance-ken-odhiambo",
+      "name": "Brance Ken Odhiambo",
+      "role": "Partner",
+      "specialties": "Dispute resolution, IP & commercial litigation",
+      "image": "assets/brance-ken-odhiambo.webp",
+      "alt": "Brance Ken Odhiambo, Partner at KDH Advocates",
+      "qualifications": [
+        "LLB (Kenyatta University)",
+        "PGDip (Kenya School of Law)"
+      ],
+      "bio": [
+        "Brance is a Founding Partner at KDH Advocates and a registered Patent Agent. He leads the firm's Dispute Resolution Department, representing national and international clients in complex, high-stakes commercial, construction, insolvency, and intellectual property matters.",
+        "He has acted in substantial arbitrations concerning electrical equipment and advertising boards, a major Nairobi construction project, and the development of a bespoke management system. He has also defended a microfinance institution against a multimillion-shilling employment claim.",
+        "His practice extends to intellectual property and real estate. Brance has advised in a significant hospitality trademark dispute, defended homeowners against fraudulent land claims, and guided clients through high-value property acquisitions in Nairobi.",
+        "He represents the Law Society of Kenya, Nairobi Branch, on the Supreme Court Bar-Bench Committee, Tax Liaison Committee, and Commercial Court Bar-Bench Committee. He also serves on the boards of Shield Forensics Kenya and International Christian Youthworks (ICY), Africa."
+      ]
+    },
+    {
+      "id": "imanuel-fwamba-barasa",
+      "name": "Imanuel Fwamba Barasa",
+      "role": "Partner",
+      "specialties": "International law, trade, investment & climate finance",
+      "image": "assets/imanuel-fwamba-barasa.webp",
+      "alt": "Imanuel Fwamba Barasa, Partner at KDH Advocates",
+      "qualifications": [
+        "LLB & PGDip",
+        "LLM, International Economic Law & Policy"
+      ],
+      "bio": [
+        "Imanuel leads the International Law and Trade Practice at KDH Advocates. He advises on cross-border transactions, international trade, and investment agreements, drawing on experience with EU export controls and sanctions in Brussels and trade-policy work supporting Kenya's Ministry of Industry, Trade, and Investments.",
+        "His international-organisation experience includes the Green Climate Fund, where he worked on grant, loan, and equity investment agreements for climate projects, and legal work with the UN's International Fund for Agricultural Development and World Food Programme in Rome.",
+        "Imanuel has advised across employment, mining, investment establishment, banking acquisitions, and supply-chain finance. His work includes due diligence on tax, intellectual property, shareholding, and regulatory compliance, as well as drafting and negotiating key transaction documents.",
+        "He serves as adjunct faculty at Kenyatta University School of Law, coordinates the TradeLab, and contributes to scholarship on the African Continental Free Trade Area and the East African Community Rule of Law Index. He is also Chairperson of the Kenyatta University School of Law Alumni Association."
+      ]
+    },
+    {
+      "id": "lynne-jeruto",
+      "name": "Lynne Jeruto",
+      "role": "Associate",
+      "specialties": "Dispute resolution, litigation & arbitration",
+      "image": "assets/lynne-jeruto.webp",
+      "alt": "Lynne Jeruto, Associate at KDH Advocates",
+      "qualifications": [
+        "Bachelor of Laws",
+        "Postgraduate Diploma in Law"
+      ],
+      "bio": [
+        "Lynne is an Associate in the Dispute Resolution Department. She works closely with the partners in complex litigation and arbitration before domestic and international courts and tribunals.",
+        "Her matters include commercial litigation and arbitration, corporate and shareholder disputes, employment and labour relations, constitutional and administrative law, land, and insolvency.",
+        "She brings a keen eye for detail and a strategic approach, combining efficient litigation with alternative mechanisms such as arbitration and mediation to secure the best outcomes for clients."
+      ]
+    },
+    {
+      "id": "dorcas-adhiambo",
+      "name": "Dorcas Adhiambo",
+      "role": "Associate",
+      "specialties": "Real estate, construction & securitisation",
+      "image": "assets/dorcas-adhiambo.webp",
+      "alt": "Dorcas Adhiambo, Associate at KDH Advocates",
+      "qualifications": [
+        "Bachelor of Laws",
+        "Postgraduate Diploma in Law"
+      ],
+      "bio": [
+        "Dorcas is an Associate in the Real Estate and Construction Practice. She supports property developers, financial institutions, and local and international investors through complex transactions and developments.",
+        "Her work spans acquisitions, sales and conveyancing, property development and joint ventures, commercial and residential leasing, land use planning, environmental compliance, real estate finance, securitisation, and construction contract management.",
+        "Dorcas approaches every matter with precision and a client-focused perspective, structuring transactions to minimise risk while maximising value."
+      ]
+    },
+    {
+      "id": "scort-sala",
+      "name": "Scort Sala",
+      "role": "Associate",
+      "specialties": "Employment, labour relations & workplace disputes",
+      "image": "assets/scort-sala.webp",
+      "alt": "Scort Sala, Associate at KDH Advocates",
+      "qualifications": [
+        "Advocate of the High Court of Kenya"
+      ],
+      "bio": [
+        "Scort advises employers and employees on employment contracts, workplace policies, compensation structures, and the full range of workplace issues.",
+        "His practice includes dispute resolution and litigation, health and safety compliance, redundancies, terminations, restructuring, collective bargaining, industrial relations, and Kenyan employment-law compliance.",
+        "He focuses on practical, balanced solutions to workplace challenges."
+      ]
+    }
+  ],
+  "analytics": {
+    "enabled": true,
+    "consentRequired": true
   }
 }

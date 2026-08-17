@@ -2444,3 +2444,6 @@ footer > * {
     transform: none;
   }
 }
+
+/* Bot-trap field for the secure consultation endpoint; invisible to people and assistive navigation. */
+.hp-field { position: absolute !important; left: -10000px !important; width: 1px !important; height: 1px !important; overflow: hidden !important; opacity: 0 !important; pointer-events: none !important; }

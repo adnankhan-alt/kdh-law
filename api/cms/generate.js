@@ -1,8 +1,8 @@
-const { session } = require("../_lib/session");
+const { requireCms } = require('../_lib/cms');
 
 module.exports = async function handler(req, res) {
-  const current = session(req);
-  if (!current) return res.status(401).json({ error: "Sign in is required." });
+  const current = requireCms(req, res, 'editor');
+  if (!current) return;
 
   if (req.method !== "POST") return res.status(405).end();
 

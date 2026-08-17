@@ -397,7 +397,9 @@ if (sectionMap.size && "IntersectionObserver" in window) {
 }
 
 // Keep an opened practice heading below the fixed header after layout shifts.
-document.querySelectorAll(".practice-item").forEach((item) => {
+function bindPracticeItem(item) {
+  if (!item || item.dataset.practiceBound) return;
+  item.dataset.practiceBound = "true";
   item.addEventListener("toggle", () => {
     if (!item.open) return;
     window.requestAnimationFrame(() => {
@@ -412,44 +414,47 @@ document.querySelectorAll(".practice-item").forEach((item) => {
       });
     });
   });
-});
+}
+document.querySelectorAll(".practice-item").forEach(bindPracticeItem);
 
-// Accessible team-profile dialogs.
-document.querySelectorAll(".profile-open").forEach((button) => {
+// Accessible team-profile dialogs. These binders are reusable because CMS-managed
+// team profiles can replace the authored HTML after site.json loads.
+function bindProfileButton(button) {
+  if (!button || button.dataset.profileBound) return;
+  button.dataset.profileBound = "true";
   button.addEventListener("click", () => {
     const dialog = document.getElementById(button.dataset.dialog);
     if (!(dialog instanceof HTMLDialogElement)) return;
     dialog.showModal();
     document.body.classList.add("dialog-open");
   });
-});
+}
 
-document.querySelectorAll(".profile-dialog").forEach((dialog) => {
-  const close = dialog.querySelector(".dialog-close");
-  close?.addEventListener("click", () => dialog.close());
-
+function bindProfileDialog(dialog) {
+  if (!dialog || dialog.dataset.profileBound) return;
+  dialog.dataset.profileBound = "true";
+  dialog.querySelector(".dialog-close")?.addEventListener("click", () => dialog.close());
   dialog.addEventListener("click", (event) => {
     const bounds = dialog.getBoundingClientRect();
-    const outside =
-      event.clientX < bounds.left ||
-      event.clientX > bounds.right ||
-      event.clientY < bounds.top ||
-      event.clientY > bounds.bottom;
+    const outside = event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom;
     if (outside) dialog.close();
   });
-
   dialog.addEventListener("close", () => {
-    if (!document.querySelector(".profile-dialog[open]")) {
-      document.body.classList.remove("dialog-open");
-    }
+    if (!document.querySelector(".profile-dialog[open]")) document.body.classList.remove("dialog-open");
   });
-});
+}
+document.querySelectorAll(".profile-open").forEach(bindProfileButton);
+document.querySelectorAll(".profile-dialog").forEach(bindProfileDialog);
 
-// Static-site consultation form: validate, then prepare a complete email.
+const visualMode = new URLSearchParams(window.location.search).get("cms") === "visual";
+
+// Consultation requests are sent to the private CMS enquiry store. If private
+// storage is not configured, the existing email workflow remains a safe fallback.
 const form = document.querySelector(".consultation");
-form?.addEventListener("submit", (event) => {
+form?.addEventListener("submit", async (event) => {
   event.preventDefault();
   const status = form.querySelector(".form-status");
+  if (visualMode) return;
 
   if (!form.checkValidity()) {
     form.reportValidity();
@@ -458,42 +463,83 @@ form?.addEventListener("submit", (event) => {
   }
 
   const data = new FormData(form);
-  const subject = `Consultation request - ${data.get("area")}`;
-  const body = [
-    `Name: ${data.get("name")}`,
-    `Email: ${data.get("email")}`,
-    `Company: ${data.get("company") || "Not provided"}`,
-    `Practice area: ${data.get("area")}`,
-    "",
-    "How KDH can help:",
-    data.get("message")
-  ].join("\n");
+  const payload = Object.fromEntries(data.entries());
+  const submit = form.querySelector('button[type="submit"]');
+  if (submit) submit.disabled = true;
+  if (status) status.textContent = "Sending your enquiry securely…";
 
-  if (status) status.textContent = "Opening your email application with the enquiry prepared.";
-  window.location.href = `mailto:law@kdhadvocates.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  try {
+    const response = await fetch("/api/enquiries", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.error || "Secure enquiry storage is unavailable.");
+    }
+    form.reset();
+    if (status) status.textContent = "Thank you. Your consultation request has been sent to KDH Advocates.";
+  } catch {
+    const subject = `Consultation request - ${data.get("area")}`;
+    const body = [
+      `Name: ${data.get("name")}`,
+      `Email: ${data.get("email")}`,
+      `Company: ${data.get("company") || "Not provided"}`,
+      `Practice area: ${data.get("area")}`,
+      "",
+      "How KDH can help:",
+      data.get("message")
+    ].join("\n");
+    if (status) status.textContent = "Secure submission is unavailable, so your email application is being opened instead.";
+    window.location.href = `mailto:law@kdhadvocates.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  } finally {
+    if (submit) submit.disabled = false;
+  }
 });
 
-// Cookie preference notice. No analytics are loaded by this site.
+let cookieChoice = null;
+let managedAnalyticsEnabled = true;
 const cookie = document.querySelector(".cookie");
+try {
+  cookieChoice = localStorage.getItem("kdh-cookie-choice");
+} catch {
+  cookieChoice = "essential";
+}
+if (cookie && !cookieChoice) cookie.hidden = false;
 if (cookie) {
-  let savedChoice = null;
-  try {
-    savedChoice = localStorage.getItem("kdh-cookie-choice");
-  } catch {
-    savedChoice = "essential";
-  }
-
-  if (!savedChoice) cookie.hidden = false;
   cookie.addEventListener("click", (event) => {
     const choice = event.target.dataset.cookie;
     if (!choice) return;
-    try {
-      localStorage.setItem("kdh-cookie-choice", choice);
-    } catch {
-      // The preference cannot be stored in private or restricted contexts.
-    }
+    cookieChoice = choice;
+    try { localStorage.setItem("kdh-cookie-choice", choice); } catch { /* storage may be restricted */ }
     cookie.hidden = true;
+    if (choice === "all") trackPageView();
   });
+}
+
+function analyticsPath() {
+  if (window.location.pathname.endsWith('/article') || window.location.pathname.endsWith('/article.html')) {
+    const slug = new URLSearchParams(window.location.search).get('slug');
+    if (slug && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) return `/article/${slug}`;
+  }
+  return window.location.pathname || '/';
+}
+
+function trackPageView() {
+  if (visualMode || !managedAnalyticsEnabled || cookieChoice !== "all") return;
+  const path = analyticsPath();
+  const key = `kdh-view:${path}`;
+  try {
+    if (sessionStorage.getItem(key)) return;
+    sessionStorage.setItem(key, "1");
+  } catch { /* continue without de-duplication */ }
+  fetch("/api/analytics", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ path }),
+    keepalive: true
+  }).catch(() => {});
 }
 
 // Published copy is kept in Git-backed content files. The visual editor uses
@@ -501,8 +547,6 @@ if (cookie) {
 // while the public HTML remains a resilient fallback.
 const readPath = (object, path) =>
   path.split(".").reduce((value, key) => value?.[key], object);
-
-const visualMode = new URLSearchParams(window.location.search).get("cms") === "visual";
 
 function elementKey(element) {
   if (element.dataset.cms) return `cms:${element.dataset.cms}`;
@@ -526,7 +570,7 @@ function elementKey(element) {
 
 function editableTextNodes() {
   const nodes = [];
-  const excluded = "script,style,noscript,textarea,select,option,.scroll-guide,[aria-hidden='true']";
+  const excluded = "script,style,noscript,textarea,select,option,.scroll-guide,[aria-hidden='true'],[data-structured-cms]";
 
   const visit = (element) => {
     if (element.matches?.(excluded)) return;
@@ -612,9 +656,11 @@ function enableVisualEditor() {
   });
 
   document.querySelectorAll("img").forEach((image) => {
+    if (image.closest("[data-structured-cms]")) return;
     image.dataset.visualKey = elementKey(image);
   });
   document.querySelectorAll("a[href]").forEach((link) => {
+    if (link.closest("[data-structured-cms]")) return;
     link.dataset.visualKey = elementKey(link);
   });
 
@@ -680,34 +726,233 @@ window.KDHVisualEditor = {
   }
 };
 
+
+function ensureMeta(selector, attributes) {
+  let element = document.head.querySelector(selector);
+  if (!element) {
+    element = document.createElement("meta");
+    document.head.appendChild(element);
+  }
+  Object.entries(attributes).forEach(([name, value]) => element.setAttribute(name, value));
+  return element;
+}
+
+function applyManagedSeo(seo = {}) {
+  if (seo.title) document.title = seo.title;
+  if (seo.description) ensureMeta('meta[name="description"]', { name: "description", content: seo.description });
+  if (seo.robots) ensureMeta('meta[name="robots"]', { name: "robots", content: seo.robots });
+  if (seo.title) ensureMeta('meta[property="og:title"]', { property: "og:title", content: seo.title });
+  if (seo.description) ensureMeta('meta[property="og:description"]', { property: "og:description", content: seo.description });
+  if (seo.canonical) ensureMeta('meta[property="og:url"]', { property: "og:url", content: seo.canonical });
+  if (seo.ogImage) ensureMeta('meta[property="og:image"]', { property: "og:image", content: seo.ogImage });
+  ensureMeta('meta[property="og:type"]', { property: "og:type", content: "website" });
+  ensureMeta('meta[name="twitter:card"]', { name: "twitter:card", content: seo.ogImage ? "summary_large_image" : "summary" });
+  if (seo.title) ensureMeta('meta[name="twitter:title"]', { name: "twitter:title", content: seo.title });
+  if (seo.description) ensureMeta('meta[name="twitter:description"]', { name: "twitter:description", content: seo.description });
+  if (seo.ogImage) ensureMeta('meta[name="twitter:image"]', { name: "twitter:image", content: seo.ogImage });
+
+  if (seo.canonical) {
+    let canonical = document.head.querySelector('link[rel="canonical"]');
+    if (!canonical) {
+      canonical = document.createElement("link");
+      canonical.rel = "canonical";
+      document.head.appendChild(canonical);
+    }
+    canonical.href = seo.canonical;
+  }
+}
+
+function syncPracticeSelect(practices = []) {
+  const select = document.querySelector('#area');
+  if (!select) return;
+  const current = select.value;
+  select.replaceChildren();
+  const placeholder = document.createElement('option');
+  placeholder.value = '';
+  placeholder.disabled = true;
+  placeholder.selected = true;
+  select.appendChild(placeholder);
+  practices.forEach((practice) => {
+    const option = document.createElement('option');
+    option.textContent = practice.title || '';
+    select.appendChild(option);
+  });
+  const other = document.createElement('option');
+  other.textContent = 'Other';
+  select.appendChild(other);
+  if ([...select.options].some((option) => option.value === current)) select.value = current;
+}
+
+function renderManagedPractices(practices) {
+  if (!Array.isArray(practices) || !practices.length) return;
+  const container = document.querySelector('.practice-accordion');
+  if (!container) return;
+  container.dataset.structuredCms = 'practices';
+  container.replaceChildren();
+
+  practices.forEach((practice, index) => {
+    const details = document.createElement('details');
+    details.className = 'practice-item reveal visible';
+    if (index === 0) details.open = true;
+
+    const summary = document.createElement('summary');
+    const number = document.createElement('span');
+    number.textContent = String(index + 1).padStart(2, '0');
+    const title = document.createElement('h3');
+    title.textContent = practice.title || '';
+    const icon = document.createElement('i');
+    icon.setAttribute('aria-hidden', 'true');
+    summary.append(number, title, icon);
+
+    const detail = document.createElement('div');
+    detail.className = 'practice-detail';
+    const intro = document.createElement('p');
+    intro.textContent = practice.intro || '';
+    const list = document.createElement('ul');
+    (practice.services || []).forEach((service) => {
+      const item = document.createElement('li');
+      item.textContent = service;
+      list.appendChild(item);
+    });
+    detail.append(intro, list);
+    details.append(summary, detail);
+    container.appendChild(details);
+    bindPracticeItem(details);
+  });
+  syncPracticeSelect(practices);
+}
+
+function safeId(value, fallback) {
+  const id = String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  return id || fallback;
+}
+
+function renderManagedTeam(team) {
+  if (!Array.isArray(team) || !team.length) return;
+  const people = document.querySelector('.people');
+  if (!people) return;
+  people.dataset.structuredCms = 'team';
+  people.replaceChildren();
+
+  document.querySelectorAll('.profile-dialog').forEach((dialog) => dialog.remove());
+  const cookieNotice = document.querySelector('.cookie');
+
+  team.forEach((person, index) => {
+    const id = `${safeId(person.id || person.name, 'person')}-${index + 1}`;
+    const dialogId = `profile-${id}`;
+    const article = document.createElement('article');
+    article.className = `person ${index === 0 ? 'person-lead ' : ''}reveal visible`;
+
+    const portrait = document.createElement('div');
+    portrait.className = 'portrait';
+    const image = document.createElement('img');
+    image.src = person.image || '';
+    image.alt = person.alt || `${person.name || 'KDH attorney'}, ${person.role || ''}`;
+    portrait.appendChild(image);
+
+    const copy = document.createElement('div');
+    copy.className = 'person-copy';
+    const role = document.createElement('p');
+    role.textContent = person.role || '';
+    const name = document.createElement('h3');
+    name.textContent = person.name || '';
+    const specialties = document.createElement('span');
+    specialties.textContent = person.specialties || '';
+    const button = document.createElement('button');
+    button.className = 'profile-open';
+    button.type = 'button';
+    button.dataset.dialog = dialogId;
+    button.textContent = 'Read full profile ';
+    const arrow = document.createElement('b');
+    arrow.setAttribute('aria-hidden', 'true');
+    arrow.textContent = '↗';
+    button.appendChild(arrow);
+    copy.append(role, name, specialties, button);
+    article.append(portrait, copy);
+    people.appendChild(article);
+    bindProfileButton(button);
+
+    const dialog = document.createElement('dialog');
+    dialog.className = 'profile-dialog';
+    dialog.id = dialogId;
+    const headingId = `${id}-name`;
+    dialog.setAttribute('aria-labelledby', headingId);
+    const close = document.createElement('button');
+    close.className = 'dialog-close';
+    close.type = 'button';
+    close.setAttribute('aria-label', 'Close profile');
+    close.textContent = '×';
+    const grid = document.createElement('div');
+    grid.className = 'dialog-grid';
+    const personColumn = document.createElement('div');
+    personColumn.className = 'dialog-person';
+    const dialogImage = document.createElement('img');
+    dialogImage.src = person.image || '';
+    dialogImage.alt = person.name || 'KDH attorney';
+    const dialogRole = document.createElement('p');
+    dialogRole.textContent = person.role || '';
+    const dialogName = document.createElement('h2');
+    dialogName.id = headingId;
+    dialogName.textContent = person.name || '';
+    const qualifications = document.createElement('span');
+    (person.qualifications || []).forEach((qualification, qualificationIndex) => {
+      if (qualificationIndex) qualifications.appendChild(document.createElement('br'));
+      qualifications.appendChild(document.createTextNode(qualification));
+    });
+    personColumn.append(dialogImage, dialogRole, dialogName, qualifications);
+
+    const bio = document.createElement('div');
+    bio.className = 'dialog-bio';
+    (person.bio || []).forEach((paragraph) => {
+      const p = document.createElement('p');
+      p.textContent = paragraph;
+      bio.appendChild(p);
+    });
+    grid.append(personColumn, bio);
+    dialog.append(close, grid);
+    document.body.insertBefore(dialog, cookieNotice || null);
+    bindProfileDialog(dialog);
+  });
+}
+
+function applyStructuredSiteContent(siteContent) {
+  applyManagedSeo(siteContent.seo || {});
+  renderManagedPractices(siteContent.practices);
+  renderManagedTeam(siteContent.team);
+  managedAnalyticsEnabled = siteContent.analytics?.enabled !== false;
+  if (cookieChoice === 'all') trackPageView();
+}
+
 async function loadManagedContent() {
+  let siteContent = null;
   try {
     const siteResponse = await fetch("/content/site.json", { cache: "no-store" });
     if (siteResponse.ok) {
-      const siteContent = await siteResponse.json();
+      siteContent = await siteResponse.json();
       document.querySelectorAll("[data-cms]").forEach((element) => {
         const value = readPath(siteContent, element.dataset.cms);
         if (typeof value !== "string") return;
         element.textContent = value;
         if (element.dataset.cms === "contact.email") element.href = `mailto:${value}`;
-        if (element.dataset.cms === "contact.phone") {
-          element.href = `tel:${value.replace(/[^\d+]/g, "")}`;
-        }
+        if (element.dataset.cms === "contact.phone") element.href = `tel:${value.replace(/[^\d+]/g, "")}`;
       });
     }
 
     let pageResponse = await fetch("/api/page-content", { cache: "no-store" });
-    if (!pageResponse.ok) {
-      pageResponse = await fetch("/content/page.json", { cache: "no-store" });
-    }
+    if (!pageResponse.ok) pageResponse = await fetch("/content/page.json", { cache: "no-store" });
     if (pageResponse.ok) applyVisualContent(await pageResponse.json());
+
+    // Structured CMS collections intentionally win over old visual-editor keys.
+    if (siteContent) applyStructuredSiteContent(siteContent);
   } catch {
-    // The carefully authored HTML remains the fallback if content cannot load.
+    // The carefully authored HTML remains the fallback if managed content cannot load.
   }
 
   if (visualMode) {
     enableVisualEditor();
     window.parent.postMessage({ type: "kdh:visual-ready" }, window.location.origin);
+  } else if (cookieChoice === 'all') {
+    trackPageView();
   }
 }
 
