@@ -22,7 +22,7 @@
 
   <div class="workspace" id="workspace" hidden>
     <!-- Sidebar Menu -->
-    <aside class="sidebar">
+    <div class="sidebar-overlay" id="sidebar-overlay"></div><aside class="sidebar" id="sidebar">
       <div class="sidebar-brand">
         <a href="/" target="_blank"><img src="/assets/kdh-law-logo-transparent.png" alt="KDH"></a>
       </div>
@@ -40,7 +40,7 @@
     <!-- Main Content Area -->
     <main class="main-content">
       <header class="topbar">
-        <div id="topbar-title">Live Site Editor</div>
+        <button class="hamburger" id="hamburger">?</button><div id="topbar-title">Live Site Editor</div>
         <p id="status" role="status" aria-live="polite"></p>
         <button class="primary" id="save" type="button">Save Homepage</button>
       </header>
@@ -123,3 +123,4 @@
   <script src="/admin/posts-manager.js"></script>
 </body>
 </html>
+

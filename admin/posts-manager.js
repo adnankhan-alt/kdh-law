@@ -46,7 +46,7 @@ menuItems.forEach(item => {
       section.classList.remove('active');
     });
     
-    document.getElementById(targetId).classList.add('active');
+    document.getElementById(targetId).classList.add('active'); document.getElementById('topbar-title').textContent = item.textContent.replace(/[^\w\s]/g, '').trim();
     
     if (targetId === 'view-insights') {
       loadPosts();
@@ -211,3 +211,29 @@ btnAiGenerate?.addEventListener('click', async () => {
   }
   btnAiGenerate.disabled = false;
 });
+
+const hamburger = document.getElementById('hamburger');
+const sidebar = document.getElementById('sidebar');
+const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+function toggleSidebar() {
+  sidebar.classList.toggle('open');
+  sidebarOverlay.classList.toggle('open');
+}
+
+if (hamburger) {
+  hamburger.addEventListener('click', toggleSidebar);
+}
+if (sidebarOverlay) {
+  sidebarOverlay.addEventListener('click', toggleSidebar);
+}
+
+// Auto-close sidebar on mobile when a menu item is clicked
+menuItems.forEach(item => {
+  item.addEventListener('click', () => {
+    if (window.innerWidth <= 850 && sidebar.classList.contains('open')) {
+      toggleSidebar();
+    }
+  });
+});
+
