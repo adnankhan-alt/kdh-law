@@ -67,7 +67,7 @@
       ]
     },
     {
-      "source": "/api/cms/(.*)",
+      "source": "/api/cms",
       "headers": [
         {
           "key": "Cache-Control",
@@ -76,7 +76,7 @@
       ]
     },
     {
-      "source": "/api/enquiries",
+      "source": "/api/public",
       "headers": [
         {
           "key": "Cache-Control",

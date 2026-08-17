@@ -469,7 +469,7 @@ form?.addEventListener("submit", async (event) => {
   if (status) status.textContent = "Sending your enquiry securely…";
 
   try {
-    const response = await fetch("/api/enquiries", {
+    const response = await fetch("/api/public?route=enquiries", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
@@ -534,7 +534,7 @@ function trackPageView() {
     if (sessionStorage.getItem(key)) return;
     sessionStorage.setItem(key, "1");
   } catch { /* continue without de-duplication */ }
-  fetch("/api/analytics", {
+  fetch("/api/public?route=analytics", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ path }),
@@ -938,7 +938,7 @@ async function loadManagedContent() {
       });
     }
 
-    let pageResponse = await fetch("/api/page-content", { cache: "no-store" });
+    let pageResponse = await fetch("/api/public?route=page-content", { cache: "no-store" });
     if (!pageResponse.ok) pageResponse = await fetch("/content/page.json", { cache: "no-store" });
     if (pageResponse.ok) applyVisualContent(await pageResponse.json());
 
