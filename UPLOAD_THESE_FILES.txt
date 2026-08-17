@@ -1,0 +1,20 @@
+KDH LIVE EDITOR CLEANUP
+
+Replace exactly these five files in GitHub:
+
+/admin/index.html
+/admin/admin.css
+/admin/admin.js
+/index.html
+/script.js
+
+What this fix does:
+- removes the permanent "Editing mode" banner
+- removes the startup "Homepage editor / No GitHub write token" banner
+- removes the "Live editor ready" banner
+- moves genuine save/error notices to a small temporary bottom-right toast
+- fixes the visual editor text-wrapper CSS collision that squashed the hero eyebrow text into a narrow vertical column
+- cache-busts the updated admin and homepage JavaScript
+
+Do not upload the outer kdh-clean-live-editor-fix folder into the repository.
+Open it and replace the files at the paths above.

@@ -634,9 +634,29 @@ function enableVisualEditor() {
   style.textContent = `
     .visual-cms-mode * { animation-duration: 0s !important; transition-duration: .12s !important; }
     .visual-cms-mode .reveal { opacity: 1 !important; transform: none !important; }
-    .visual-cms-text { border-radius: 3px; cursor: text; outline: 1px dashed transparent; }
+    .visual-cms-text {
+      display: inline !important;
+      position: static !important;
+      inset: auto !important;
+      float: none !important;
+      width: auto !important;
+      min-width: 0 !important;
+      max-width: none !important;
+      height: auto !important;
+      min-height: 0 !important;
+      max-height: none !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      background: transparent !important;
+      transform: none !important;
+      border-radius: 3px;
+      cursor: text;
+      outline: 1px dashed transparent;
+      box-shadow: none !important;
+      vertical-align: baseline !important;
+    }
     .visual-cms-text:hover { outline-color: #d7ac27; background: rgba(215,172,39,.14); }
-    .visual-cms-text:focus { outline: 2px solid #d7ac27; background: rgba(255,255,255,.94); color: #0c1730; }
+    .visual-cms-text:focus { outline: 2px solid #d7ac27; outline-offset: 2px; }
     .visual-cms-mode img[data-visual-key],
     .visual-cms-mode a[data-visual-key] { cursor: pointer; }
     .visual-cms-mode img[data-visual-key]:hover { outline: 3px solid #d7ac27; outline-offset: -3px; }
