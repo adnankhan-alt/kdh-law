@@ -14,7 +14,9 @@ const btnAiGenerate = document.querySelector('#btn-ai-generate');
 const pTitle = document.querySelector('#post-title');
 const pSlug = document.querySelector('#post-slug');
 const pSummary = document.querySelector('#post-summary');
-const pContent = document.querySelector('#post-content');
+const pCover = document.querySelector('#post-cover');
+const pCoverUpload = document.querySelector('#post-cover-upload');
+const pCoverPreview = document.querySelector('#post-cover-preview');
 
 const btnSaveSettings = document.querySelector('#btn-save-settings');
 const geminiKeyInput = document.querySelector('#gemini-key');
@@ -25,6 +27,94 @@ const sidebarOverlay = document.getElementById('sidebar-overlay');
 
 let currentPosts = [];
 let editingSha = null;
+let quill;
+
+// Initialize Quill Editor (Bubble theme for medium-style distraction free)
+if (document.getElementById('post-editor-quill')) {
+  quill = new Quill('#post-editor-quill', {
+    theme: 'bubble',
+    placeholder: 'Highlight text to see formatting options. Drag and drop images here...',
+    modules: {
+      toolbar: [
+        ['bold', 'italic', 'underline', 'strike'],
+        [{ 'header': 1 }, { 'header': 2 }],
+        ['blockquote', 'code-block'],
+        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+        ['link', 'image', 'video'],
+        ['clean']
+      ]
+    }
+  });
+
+  // Handle inline image uploads in Quill
+  quill.getModule('toolbar').addHandler('image', () => {
+    const input = document.createElement('input');
+    input.setAttribute('type', 'file');
+    input.setAttribute('accept', 'image/*');
+    input.click();
+
+    input.onchange = async () => {
+      const file = input.files[0];
+      if (file) {
+        document.getElementById('status').textContent = 'Uploading image...';
+        const url = await uploadFile(file);
+        if (url) {
+          const range = quill.getSelection(true);
+          quill.insertEmbed(range.index, 'image', url);
+          document.getElementById('status').textContent = '';
+        } else {
+          document.getElementById('status').textContent = 'Image upload failed';
+        }
+      }
+    };
+  });
+}
+
+// Cover image upload handler
+if (pCoverUpload) {
+  pCoverUpload.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    document.getElementById('status').textContent = 'Uploading cover image...';
+    pCoverUpload.disabled = true;
+    
+    const url = await uploadFile(file);
+    if (url) {
+      pCover.value = url;
+      pCoverPreview.src = url;
+      pCoverPreview.style.display = 'block';
+      document.getElementById('status').textContent = 'Cover uploaded!';
+    } else {
+      document.getElementById('status').textContent = 'Upload failed';
+    }
+    pCoverUpload.disabled = false;
+  });
+}
+
+async function uploadFile(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = async () => {
+      try {
+        const res = await fetch('/api/cms/upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            filename: file.name,
+            contentType: file.type,
+            content: reader.result
+          })
+        });
+        const data = await res.json();
+        resolve(data.url);
+      } catch {
+        resolve(null);
+      }
+    };
+  });
+}
 
 // Sidebar toggle logic
 function toggleSidebar() {
@@ -109,15 +199,24 @@ function renderPosts() {
 window.editPost = async (slug, sha) => {
   document.getElementById('status').textContent = 'Loading post...';
   try {
-    const res = await fetch(`/api/posts`);
+    const res = await fetch('/api/posts');
     const allPosts = await res.json();
     const post = allPosts.find(p => p.slug === slug);
     if (!post) throw new Error('Post not found');
     
-    pTitle.value = post.title;
-    pSlug.value = post.slug;
-    pSummary.value = post.summary;
-    pContent.value = post.content;
+    pTitle.value = post.title || '';
+    pSlug.value = post.slug || '';
+    pSummary.value = post.summary || '';
+    pCover.value = post.coverImage || '';
+    if (post.coverImage) {
+      pCoverPreview.src = post.coverImage;
+      pCoverPreview.style.display = 'block';
+    } else {
+      pCoverPreview.style.display = 'none';
+      pCoverUpload.value = '';
+    }
+    if (quill) quill.root.innerHTML = post.content || '';
+    
     editingSha = sha;
     
     viewSections.forEach(s => s.classList.remove('active'));
@@ -133,8 +232,12 @@ btnNewPost?.addEventListener('click', () => {
   pTitle.value = '';
   pSlug.value = '';
   pSummary.value = '';
-  pContent.value = '';
+  pCover.value = '';
+  pCoverUpload.value = '';
+  pCoverPreview.style.display = 'none';
+  if (quill) quill.root.innerHTML = '';
   editingSha = null;
+  
   viewSections.forEach(s => s.classList.remove('active'));
   postEditor.classList.add('active');
   btnDeletePost.hidden = true;
@@ -149,6 +252,7 @@ btnSavePost?.addEventListener('click', async () => {
   btnSavePost.disabled = true;
   document.getElementById('status').textContent = 'Saving post...';
   try {
+    const content = quill ? quill.root.innerHTML : '';
     const res = await fetch('/api/cms/posts', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -156,7 +260,8 @@ btnSavePost?.addEventListener('click', async () => {
         slug: pSlug.value.trim(),
         title: pTitle.value.trim(),
         summary: pSummary.value.trim(),
-        content: pContent.value.trim(),
+        coverImage: pCover.value.trim(),
+        content: content,
         sha: editingSha
       })
     });
@@ -227,7 +332,9 @@ btnAiGenerate?.addEventListener('click', async () => {
     pTitle.value = data.title || '';
     pSlug.value = (data.title || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
     pSummary.value = data.summary || '';
-    pContent.value = data.content || '';
+    if (quill) {
+      quill.root.innerHTML = data.content || '';
+    }
     document.getElementById('status').textContent = 'AI generation complete!';
   } catch (e) {
     document.getElementById('status').textContent = e.message;

@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;1,500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/admin/admin.css">
-</head>
+<link href="https://cdn.quilljs.com/1.3.6/quill.bubble.css" rel="stylesheet"></head>
 <body>
   <section class="signin" id="signin">
     <img src="/assets/kdh-law-logo-transparent.png" alt="KDH Advocates LLP">
@@ -76,8 +76,8 @@
         <div class="post-form">
           <label>Title<input id="post-title"></label>
           <label>URL Slug<input id="post-slug" placeholder="e.g. new-data-laws"></label>
-          <label>Summary<textarea id="post-summary" rows="2"></textarea></label>
-          <label>Body (HTML)<textarea id="post-content" rows="10"></textarea></label>
+          <label>Cover Image<input type="file" id="post-cover-upload" accept="image/*"><input type="hidden" id="post-cover"><img id="post-cover-preview" style="max-width:200px; display:none; border-radius:4px;"/></label><label>Summary<textarea id="post-summary" rows="2"></textarea></label>
+          <label>Body Content</label><div id="post-editor-quill" style="min-height: 400px; font-size: 1.1rem; border: 1px solid #ccc; border-radius: 4px; padding: 1rem; background: #fff;"></div>
           <button class="primary" id="btn-save-post">Save and Publish Post</button>
           <button class="quiet" id="btn-delete-post" style="color: red;">Delete Post</button>
         </div>
@@ -121,6 +121,7 @@
   
   <script src="/admin/admin.js"></script>
   <script src="/admin/posts-manager.js"></script>
-</body>
+<script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script></body>
 </html>
+
 

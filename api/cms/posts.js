@@ -40,10 +40,10 @@ module.exports = async function handler(req, res) {
 
   if (req.method === "PUT") {
     // Create or update post
-    const { slug, title, summary, content, date, sha } = req.body;
+    const { slug, title, summary, content, date, sha, coverImage } = req.body;
     if (!slug || !title || !content) return res.status(400).json({ error: "Missing required fields" });
 
-    const postData = { slug, title, summary, content, date: date || new Date().toISOString() };
+    const postData = { slug, title, summary, content, coverImage: coverImage || "", date: date || new Date().toISOString() };
     const contentStr = JSON.stringify(postData, null, 2) + "\n";
     const endpoint = `https://api.github.com/repos/${repo}/contents/content/posts/${slug}.json`;
 
@@ -109,3 +109,4 @@ module.exports = async function handler(req, res) {
 
   return res.status(405).end();
 };
+
