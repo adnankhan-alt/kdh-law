@@ -1,4 +1,5 @@
 const site = require('../../../content/site.json');
+const { listPublishedPosts, publicationDate, slugify: sharedSlugify } = require('../../lib/public-posts');
 
 const ORIGIN = 'https://www.kdhadvocates.com';
 
@@ -71,6 +72,10 @@ module.exports = async function handler(req, res) {
   const slug = slugify(req.query?.slug || '');
   const person = (site.team || []).find((item) => personSlug(item) === slug);
   if (!person) return render404(res);
+  let authoredPosts = [];
+  try {
+    authoredPosts = (await listPublishedPosts({ limit: 200 })).filter((post) => String(post.author || '').trim().toLowerCase() === String(person.name || '').trim().toLowerCase()).slice(0, 6);
+  } catch {}
 
   const canonical = `${ORIGIN}/team/${personSlug(person)}`;
   const title = person.seoTitle || `${person.name} | ${person.role} | KDH Advocates Kenya`;
@@ -89,6 +94,7 @@ module.exports = async function handler(req, res) {
         name: title,
         description,
         mainEntity: { '@id': `${canonical}#person` },
+        ...(authoredPosts.length ? { hasPart: authoredPosts.map((post) => ({ '@type': 'BlogPosting', headline: post.title, url: `${ORIGIN}/insights/${sharedSlugify(post.slug)}`, datePublished: publicationDate(post), author: { '@id': `${canonical}#person` } })) } : {}),
         breadcrumb: { '@id': `${canonical}#breadcrumb` }
       },
       {
@@ -97,16 +103,12 @@ module.exports = async function handler(req, res) {
         name: person.name,
         jobTitle: person.role,
         description: (person.bio || [description])[0],
-        image,
+        ...(person.image ? { image } : {}),
+        identifier: person.id || personSlug(person),
         url: canonical,
         ...(sameAs ? { sameAs } : {}),
         knowsAbout: String(person.specialties || '').split(/,|&/).map((item) => item.trim()).filter(Boolean),
-        worksFor: {
-          '@type': 'LegalService',
-          name: 'KDH Advocates LLP',
-          url: `${ORIGIN}/`,
-          ...(companySameAs().length ? { sameAs: companySameAs() } : {})
-        }
+        worksFor: { '@id': `${ORIGIN}/#legal-service` }
       },
       {
         '@type': 'BreadcrumbList',
@@ -128,6 +130,7 @@ module.exports = async function handler(req, res) {
   const linkedInButton = person.linkedin
     ? `<a class="profile-linkedin" href="${escapeHtml(person.linkedin)}" target="_blank" rel="noopener noreferrer">LinkedIn profile <span aria-hidden="true">↗</span></a>`
     : '';
+  const authoredInsights = authoredPosts.length ? `<section class="profile-insights" aria-labelledby="profile-insights-title"><p class="eyebrow">Authored Insights</p><h2 id="profile-insights-title">Latest analysis by ${escapeHtml(person.name)}.</h2><div class="profile-insights-grid">${authoredPosts.map((post) => `<article><span>${escapeHtml(new Date(publicationDate(post)).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}))}</span><h3><a href="/insights/${encodeURIComponent(sharedSlugify(post.slug))}">${escapeHtml(post.title)}</a></h3><a href="/insights/${encodeURIComponent(sharedSlugify(post.slug))}">Read insight ↗</a></article>`).join('')}</div></section>` : '';
 
   const html = `<!doctype html>
 <html lang="en">
@@ -140,23 +143,27 @@ module.exports = async function handler(req, res) {
   <title>${escapeHtml(title)}</title>
   <link rel="canonical" href="${escapeHtml(canonical)}">
   <meta property="og:type" content="profile">
+  <meta property="og:locale" content="en_KE">
   <meta property="og:site_name" content="KDH Advocates LLP">
   <meta property="og:title" content="${escapeHtml(title)}">
   <meta property="og:description" content="${escapeHtml(description)}">
   <meta property="og:url" content="${escapeHtml(canonical)}">
   <meta property="og:image" content="${escapeHtml(image)}">
+  <meta property="og:image:alt" content="${escapeHtml(person.alt || person.name)}">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="${escapeHtml(title)}">
   <meta name="twitter:description" content="${escapeHtml(description)}">
   <meta name="twitter:image" content="${escapeHtml(image)}">
+  <meta name="twitter:image:alt" content="${escapeHtml(person.alt || person.name)}">
+  <link rel="alternate" type="application/rss+xml" title="KDH Insights RSS" href="/feed.xml">
   <link rel="icon" type="image/png" href="/assets/kdh-favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/styles.css?v=13">
+  <link rel="stylesheet" href="/styles.css?v=15">
   <script type="application/ld+json">${jsonLd(schema)}</script>
   <style>
-    body.seo-profile-page{background:#f7f6f2;color:#17213a}.seo-profile-page .site-header{position:fixed;background:rgba(255,255,255,.97);color:var(--navy);box-shadow:0 1px 0 rgba(0,23,89,.1);backdrop-filter:blur(18px)}.seo-profile-page .site-header .brand-logo img{filter:none}.profile-hero{padding:calc(var(--header-height) + clamp(3rem,6vw,5rem)) var(--section-x) clamp(3.5rem,6vw,6rem);background:var(--navy-deep);color:#fff}.profile-hero-inner{width:min(100%,var(--max));margin:auto;display:grid;grid-template-columns:minmax(250px,.68fr) minmax(0,1.32fr);gap:clamp(2.5rem,7vw,7rem);align-items:end}.profile-portrait img{width:100%;max-height:620px;aspect-ratio:4/5;object-fit:cover;display:block}.profile-copy .seo-breadcrumb{display:flex;flex-wrap:wrap;gap:.45rem;color:rgba(255,255,255,.58);font-size:.72rem;margin-bottom:clamp(2rem,5vw,5rem)}.profile-copy .seo-breadcrumb a{color:inherit}.profile-copy .eyebrow{color:var(--gold-bright)}.profile-copy h1{max-width:900px;margin:.55rem 0 .55rem;color:#fff;font-family:"Playfair Display",Georgia,serif;font-size:clamp(3.2rem,6.5vw,6.8rem);font-weight:500;line-height:.95;letter-spacing:-.05em}.profile-role{margin:0 0 1.2rem;color:var(--gold-bright);font-size:clamp(1rem,1.4vw,1.2rem);font-weight:700}.profile-focus{max-width:700px;color:rgba(255,255,255,.73);line-height:1.7}.profile-linkedin{display:inline-flex;align-items:center;gap:.45rem;margin-top:1.25rem;padding:.72rem 1rem;border:1px solid rgba(255,255,255,.34);color:#fff;font-size:.78rem;font-weight:800}.profile-main{width:min(calc(100% - 2 * var(--section-x)),var(--max));margin:auto;padding:clamp(4rem,7vw,7rem) 0}.profile-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(280px,.65fr);gap:clamp(3rem,7vw,7rem);align-items:start}.profile-bio{font-size:clamp(1.03rem,1.15vw,1.16rem);line-height:1.86}.profile-bio p{margin:0 0 1.6rem}.profile-bio h2{color:var(--navy);font-family:"Playfair Display",Georgia,serif;font-size:clamp(2rem,3.6vw,3.7rem);font-weight:500;line-height:1.05}.profile-aside{position:sticky;top:calc(var(--header-height) + 2rem)}.profile-panel{background:#fff;border:1px solid rgba(0,23,89,.1);padding:2rem;margin-bottom:1.2rem}.profile-panel h3{margin-top:0;color:var(--navy)}.profile-panel ul{padding-left:1.1rem;color:var(--slate);line-height:1.65}.profile-practice-links{display:grid;gap:.65rem}.profile-practice-links a{display:flex;justify-content:space-between;gap:1rem;padding:.75rem 0;border-bottom:1px solid var(--line);color:var(--navy);font-size:.84rem;font-weight:800}.profile-cta{margin-top:clamp(4rem,7vw,7rem);padding:clamp(2.5rem,5vw,4rem);background:var(--navy-deep);color:#fff;display:flex;justify-content:space-between;align-items:center;gap:2rem}.profile-cta h2{margin:0;color:#fff;font-family:"Playfair Display",Georgia,serif;font-size:clamp(2rem,3.7vw,3.8rem);font-weight:500}@media(max-width:900px){.seo-profile-page .site-header nav{background:#fff;color:var(--navy)}.profile-hero-inner,.profile-grid{grid-template-columns:1fr}.profile-portrait{max-width:520px}.profile-aside{position:static}.profile-cta{align-items:flex-start;flex-direction:column}}
+    body.seo-profile-page{background:#f7f6f2;color:#17213a}.seo-profile-page .site-header{position:fixed;background:rgba(255,255,255,.97);color:var(--navy);box-shadow:0 1px 0 rgba(0,23,89,.1);backdrop-filter:blur(18px)}.seo-profile-page .site-header .brand-logo img{filter:none}.profile-hero{padding:calc(var(--header-height) + clamp(3rem,6vw,5rem)) var(--section-x) clamp(3.5rem,6vw,6rem);background:var(--navy-deep);color:#fff}.profile-hero-inner{width:min(100%,var(--max));margin:auto;display:grid;grid-template-columns:minmax(250px,.68fr) minmax(0,1.32fr);gap:clamp(2.5rem,7vw,7rem);align-items:end}.profile-portrait img{width:100%;max-height:620px;aspect-ratio:4/5;object-fit:cover;display:block}.profile-copy .seo-breadcrumb{display:flex;flex-wrap:wrap;gap:.45rem;color:rgba(255,255,255,.58);font-size:.72rem;margin-bottom:clamp(2rem,5vw,5rem)}.profile-copy .seo-breadcrumb a{color:inherit}.profile-copy .eyebrow{color:var(--gold-bright)}.profile-copy h1{max-width:900px;margin:.55rem 0 .55rem;color:#fff;font-family:"Playfair Display",Georgia,serif;font-size:clamp(3.2rem,6.5vw,6.8rem);font-weight:500;line-height:.95;letter-spacing:-.05em}.profile-role{margin:0 0 1.2rem;color:var(--gold-bright);font-size:clamp(1rem,1.4vw,1.2rem);font-weight:700}.profile-focus{max-width:700px;color:rgba(255,255,255,.73);line-height:1.7}.profile-linkedin{display:inline-flex;align-items:center;gap:.45rem;margin-top:1.25rem;padding:.72rem 1rem;border:1px solid rgba(255,255,255,.34);color:#fff;font-size:.78rem;font-weight:800}.profile-main{width:min(calc(100% - 2 * var(--section-x)),var(--max));margin:auto;padding:clamp(4rem,7vw,7rem) 0}.profile-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(280px,.65fr);gap:clamp(3rem,7vw,7rem);align-items:start}.profile-bio{font-size:clamp(1.03rem,1.15vw,1.16rem);line-height:1.86}.profile-bio p{margin:0 0 1.6rem}.profile-bio h2{color:var(--navy);font-family:"Playfair Display",Georgia,serif;font-size:clamp(2rem,3.6vw,3.7rem);font-weight:500;line-height:1.05}.profile-aside{position:sticky;top:calc(var(--header-height) + 2rem)}.profile-panel{background:#fff;border:1px solid rgba(0,23,89,.1);padding:2rem;margin-bottom:1.2rem}.profile-panel h3{margin-top:0;color:var(--navy)}.profile-panel ul{padding-left:1.1rem;color:var(--slate);line-height:1.65}.profile-practice-links{display:grid;gap:.65rem}.profile-practice-links a{display:flex;justify-content:space-between;gap:1rem;padding:.75rem 0;border-bottom:1px solid var(--line);color:var(--navy);font-size:.84rem;font-weight:800}.profile-cta{margin-top:clamp(4rem,7vw,7rem);padding:clamp(2.5rem,5vw,4rem);background:var(--navy-deep);color:#fff;display:flex;justify-content:space-between;align-items:center;gap:2rem}.profile-cta h2{margin:0;color:#fff;font-family:"Playfair Display",Georgia,serif;font-size:clamp(2rem,3.7vw,3.8rem);font-weight:500}.profile-insights{margin-top:clamp(4rem,7vw,7rem);padding-top:3rem;border-top:1px solid var(--line)}.profile-insights h2{margin:.4rem 0 1.5rem;color:var(--navy);font-family:"Playfair Display",Georgia,serif;font-size:clamp(2rem,3vw,3rem);font-weight:500}.profile-insights-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem}.profile-insights-grid article{padding:1.4rem;background:#fff;border:1px solid rgba(0,23,89,.1)}.profile-insights-grid span{color:var(--gold);font-size:.64rem;font-weight:800;text-transform:uppercase}.profile-insights-grid h3{margin:.55rem 0 1rem;color:var(--navy);font-family:"Playfair Display",Georgia,serif;font-size:1.18rem;line-height:1.2}.profile-insights-grid article>a{font-size:.7rem;font-weight:800;color:var(--navy)}@media(max-width:900px){.profile-insights-grid{grid-template-columns:1fr}.seo-profile-page .site-header nav{background:#fff;color:var(--navy)}.profile-hero-inner,.profile-grid{grid-template-columns:1fr}.profile-portrait{max-width:520px}.profile-aside{position:static}.profile-cta{align-items:flex-start;flex-direction:column}}
   </style>
 </head>
 <body class="seo-profile-page">
@@ -168,10 +175,10 @@ module.exports = async function handler(req, res) {
   </header>
   <main id="main">
     <section class="profile-hero"><div class="profile-hero-inner"><div class="profile-portrait"><img src="${escapeHtml(image)}" alt="${escapeHtml(person.alt || `${person.name}, ${person.role} at KDH Advocates`)}"></div><div class="profile-copy"><nav class="seo-breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a><span>/</span><a href="/#team">Team</a><span>/</span><span>${escapeHtml(person.name)}</span></nav><p class="eyebrow">KDH Advocates LLP · Nairobi</p><h1>${escapeHtml(person.name)}</h1><p class="profile-role">${escapeHtml(person.role || '')}</p><p class="profile-focus">${escapeHtml(person.specialties || '')}</p>${linkedInButton}</div></div></section>
-    <section class="profile-main"><div class="profile-grid"><article class="profile-bio"><p class="eyebrow">Profile</p><h2>Experience shaped by commercial context.</h2>${bio}</article><aside class="profile-aside"><section class="profile-panel"><h3>Qualifications</h3><ul>${qualifications}</ul></section><section class="profile-panel"><h3>Related practice areas</h3><div class="profile-practice-links">${practiceLinks}</div></section></aside></div><section class="profile-cta"><h2>Speak with ${escapeHtml(person.name)} and the KDH team.</h2><a class="btn btn-gold" href="/#contact">Start a conversation <span aria-hidden="true">↗</span></a></section></section>
+    <section class="profile-main"><div class="profile-grid"><article class="profile-bio"><p class="eyebrow">Profile</p><h2>Experience shaped by commercial context.</h2>${bio}</article><aside class="profile-aside"><section class="profile-panel"><h3>Qualifications</h3><ul>${qualifications}</ul></section><section class="profile-panel"><h3>Related practice areas</h3><div class="profile-practice-links">${practiceLinks}</div></section></aside></div>${authoredInsights}<section class="profile-cta"><h2>Speak with ${escapeHtml(person.name)} and the KDH team.</h2><a class="btn btn-gold" href="/#contact">Start a conversation <span aria-hidden="true">↗</span></a></section></section>
   </main>
   <footer><div class="footer-bottom"><small>&copy; 2026 KDH Advocates LLP. All rights reserved.</small><p>Trust. Integrity. Results.</p></div></footer>
-  <script src="/script.js?v=13" defer></script>
+  <script src="/script.js?v=15" defer></script>
 </body>
 </html>`;
 

@@ -760,6 +760,10 @@ function ensureMeta(selector, attributes) {
 }
 
 function applyManagedSeo(seo = {}) {
+  const legacyTitle = 'KDH Advocates LLP | Trust. Integrity. Results.';
+  const legacyDescription = 'KDH Advocates LLP is a premier commercial law firm in Nairobi providing strategic legal advisory and dispute resolution across Africa.';
+  if (seo.title === legacyTitle) seo = { ...seo, title: 'KDH Advocates LLP | Commercial Lawyers in Nairobi, Kenya' };
+  if (seo.description === legacyDescription) seo = { ...seo, description: 'KDH Advocates LLP advises businesses on corporate transactions, disputes, finance, real estate, technology and investment across Kenya and Africa.' };
   if (seo.title) document.title = seo.title;
   if (seo.description) ensureMeta('meta[name="description"]', { name: "description", content: seo.description });
   if (seo.robots) ensureMeta('meta[name="robots"]', { name: "robots", content: seo.robots });
@@ -828,18 +832,30 @@ function applySiteStructuredData(siteContent = {}) {
       '@id': `${origin}/#website`,
       name: 'KDH Advocates LLP',
       alternateName: 'KDH Advocates',
-      url: `${origin}/`
+      url: `${origin}/`,
+      inLanguage: 'en-KE',
+      publisher: { '@id': `${origin}/#legal-service` }
     },
     {
       '@type': 'LegalService',
       '@id': `${origin}/#legal-service`,
       name: 'KDH Advocates LLP',
+      alternateName: 'Ken, Daniel & Henry Advocates',
       url: `${origin}/`,
-      image: siteContent.seo?.ogImage || `${origin}/assets/kdh-law-logo.jpg`,
+      logo: { '@type': 'ImageObject', url: `${origin}/assets/kdh-law-logo.jpg` },
+      image: siteContent.seo?.ogImage || `${origin}/assets/lady-justice.webp`,
       description: siteContent.seo?.description || '',
+      slogan: 'Trust. Integrity. Results.',
       ...(sameAs.length ? { sameAs } : {}),
       email: contact.email || undefined,
       telephone: contact.phone || undefined,
+      contactPoint: {
+        '@type': 'ContactPoint',
+        contactType: 'Legal consultations',
+        email: contact.email || undefined,
+        telephone: contact.phone || undefined,
+        availableLanguage: ['English']
+      },
       address: {
         '@type': 'PostalAddress',
         streetAddress: contact.office || 'IPS Building, 1st Floor, Kimathi Street',
@@ -847,6 +863,7 @@ function applySiteStructuredData(siteContent = {}) {
         addressCountry: 'KE'
       },
       areaServed: [{ '@type': 'Country', name: 'Kenya' }, { '@type': 'Continent', name: 'Africa' }],
+      knowsAbout: practices.map((practice) => practice.title).filter(Boolean),
       hasOfferCatalog: {
         '@type': 'OfferCatalog',
         name: 'Legal practice areas',
@@ -862,10 +879,13 @@ function applySiteStructuredData(siteContent = {}) {
       },
       employee: team.map((person) => ({
         '@type': 'Person',
+        '@id': `${origin}/team/${safeId(person.id || person.name, 'person')}#person`,
         name: person.name || '',
         jobTitle: person.role || '',
         url: `${origin}/team/${safeId(person.id || person.name, 'person')}`,
-        ...(person.linkedin ? { sameAs: [person.linkedin] } : {})
+        ...(person.image ? { image: /^https?:\/\//i.test(person.image) ? person.image : `${origin}/${String(person.image).replace(/^\//, '')}` } : {}),
+        ...(person.linkedin ? { sameAs: [String(person.linkedin).replace(/^http:\/\//i, 'https://')] } : {}),
+        ...(person.specialties ? { knowsAbout: String(person.specialties).split(/,|&/).map((value) => value.trim()).filter(Boolean) } : {})
       }))
     }
   ];

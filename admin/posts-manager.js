@@ -48,6 +48,7 @@
   let editingDate = null;
   let siteState = null;
   let pAuthorSelect = null;
+  let pPracticeSelect = null;
   let quill = null;
   let bootstrapped = false;
 
@@ -112,6 +113,56 @@
     }));
     select.value = selected;
     pAuthor.value = select.value;
+  }
+
+  function ensurePracticeDropdown() {
+    if (!pAuthor) return null;
+    if (pPracticeSelect?.isConnected) return pPracticeSelect;
+    const authorLabel = pAuthor.closest('label');
+    if (!authorLabel) return null;
+    const label = document.createElement('label');
+    label.className = authorLabel.className || '';
+    label.dataset.articlePracticeField = 'true';
+    label.append(document.createTextNode('Primary practice area '));
+    const hint = document.createElement('small');
+    hint.textContent = 'SEO + related insights';
+    label.appendChild(hint);
+    const select = document.createElement('select');
+    select.id = 'post-practice-area';
+    select.className = pAuthor.className || '';
+    select.setAttribute('aria-label', 'Primary practice area');
+    label.appendChild(select);
+    authorLabel.insertAdjacentElement('afterend', label);
+    pPracticeSelect = select;
+    return select;
+  }
+
+  function populatePracticeDropdown(selectedValue = '') {
+    const select = ensurePracticeDropdown();
+    if (!select) return;
+    const practices = Array.isArray(siteState?.practices) ? siteState.practices : [];
+    const selected = String(selectedValue || '').trim();
+    select.replaceChildren();
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = 'Auto-detect from article content';
+    select.appendChild(placeholder);
+    practices.forEach((practice) => {
+      const title = String(practice?.title || '').trim();
+      if (!title) return;
+      const option = document.createElement('option');
+      option.value = title;
+      option.textContent = title;
+      select.appendChild(option);
+    });
+    if (selected && ![...select.options].some((option) => option.value === selected)) {
+      const option = document.createElement('option');
+      option.value = selected;
+      option.textContent = `${selected} (existing)`;
+      select.appendChild(option);
+    }
+    select.value = selected;
+    select.disabled = !canEdit();
   }
 
   function canEdit() {
@@ -312,6 +363,7 @@
     pSummary.value = '';
     pAuthor.value = 'KDH Advocates LLP';
     populateAuthorDropdown(pAuthor.value);
+    populatePracticeDropdown('');
     pStatus.value = 'draft';
     pScheduledAt.value = '';
     scheduleField.hidden = true;
@@ -346,6 +398,7 @@
       pSummary.value = post.summary || '';
       pAuthor.value = post.author || 'KDH Advocates LLP';
       populateAuthorDropdown(pAuthor.value);
+      populatePracticeDropdown(post.practiceArea || '');
       pStatus.value = post.status || 'published';
       pScheduledAt.value = toLocalDateTime(post.scheduledAt);
       scheduleField.hidden = pStatus.value !== 'scheduled';
@@ -388,6 +441,7 @@
           title: pTitle.value.trim(),
           summary: pSummary.value.trim(),
           author: pAuthor.value.trim(),
+          practiceArea: pPracticeSelect?.value || '',
           status: pStatus.value,
           scheduledAt: pStatus.value === 'scheduled' ? new Date(pScheduledAt.value).toISOString() : '',
           coverImage: pCover.value.trim(),
@@ -473,6 +527,7 @@
       const data = await api('/api/cms?route=site', { cache: 'no-store' });
       siteState = data.content || {};
       populateAuthorDropdown(pAuthor?.value || 'KDH Advocates LLP');
+      populatePracticeDropdown(pPracticeSelect?.value || '');
       renderTeamManager();
       renderPracticeManager();
       populateSeo();
@@ -586,6 +641,7 @@
       await saveSitePatch({ team }, 'Attorney profiles, LinkedIn links and SEO metadata saved to GitHub.');
       siteState = { ...(siteState || {}), team };
       populateAuthorDropdown(pAuthor?.value || 'KDH Advocates LLP');
+      populatePracticeDropdown(pPracticeSelect?.value || '');
       $('#metric-team').textContent = String(team.length);
     } catch (error) { setStatus(error.message); }
   });

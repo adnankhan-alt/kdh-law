@@ -12,6 +12,11 @@
       ],
       "destination": "https://www.kdhadvocates.com/$1",
       "permanent": true
+    },
+    {
+      "source": "/insights.html",
+      "destination": "/insights",
+      "permanent": true
     }
   ],
   "headers": [
@@ -86,6 +91,14 @@
     }
   ],
   "rewrites": [
+    {
+      "source": "/insights",
+      "destination": "/api/public?route=insights"
+    },
+    {
+      "source": "/feed.xml",
+      "destination": "/api/public?route=feed"
+    },
     {
       "source": "/sitemap.xml",
       "destination": "/api/public?route=sitemap"

@@ -26,6 +26,7 @@ function validPost(post) {
   if (post.status === 'scheduled' && Number.isNaN(Date.parse(post.scheduledAt || ''))) return false;
   if (typeof post.seoTitle !== 'string' || post.seoTitle.length > 180) return false;
   if (typeof post.seoDescription !== 'string' || post.seoDescription.length > 500) return false;
+  if (typeof post.practiceArea !== 'string' || post.practiceArea.length > 180) return false;
   return true;
 }
 
@@ -54,6 +55,8 @@ async function listPosts(current) {
         date: post.date || null,
         scheduledAt: post.scheduledAt || null,
         coverImage: post.coverImage || '',
+        author: post.author || '',
+        practiceArea: post.practiceArea || '',
         sha: result.sha
       };
     } catch {
@@ -98,6 +101,7 @@ module.exports = async function handler(req, res) {
         status: String(body.status || 'draft'),
         scheduledAt: body.scheduledAt && !Number.isNaN(Date.parse(body.scheduledAt)) ? new Date(body.scheduledAt).toISOString() : '',
         author: String(body.author || '').trim().slice(0, 140),
+        practiceArea: String(body.practiceArea || '').trim().slice(0, 180),
         seoTitle: String(body.seoTitle || '').trim(),
         seoDescription: String(body.seoDescription || '').trim()
       };
