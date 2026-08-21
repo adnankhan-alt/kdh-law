@@ -249,6 +249,29 @@ h2 em {
   background: rgba(255, 255, 255, 0.07);
 }
 
+
+.hero-profile-link {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  margin-top: .85rem;
+  color: rgba(255,255,255,.72);
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .02em;
+  text-decoration: none;
+  transition: color .25s ease, transform .25s ease;
+}
+
+.hero-profile-link:hover {
+  color: var(--gold-bright);
+  transform: translateX(3px);
+}
+
+.site-header nav a.active {
+  color: var(--gold-bright);
+}
+
 /* Header */
 
 .site-header {
