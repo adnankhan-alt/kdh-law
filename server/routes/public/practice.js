@@ -2,6 +2,13 @@ const site = require('../../../content/site.json');
 
 const ORIGIN = 'https://www.kdhadvocates.com';
 
+function companySameAs() {
+  const social = site.social || {};
+  return [social.linkedin, social.facebook, social.x || social.twitter]
+    .map((value) => String(value || '').trim())
+    .filter((value) => /^https:\/\//i.test(value));
+}
+
 function escapeHtml(value) {
   return String(value ?? '')
     .replace(/&/g, '&amp;')
@@ -94,6 +101,7 @@ module.exports = async function handler(req, res) {
           '@type': 'LegalService',
           name: 'KDH Advocates LLP',
           url: `${ORIGIN}/`,
+          ...(companySameAs().length ? { sameAs: companySameAs() } : {}),
           address: {
             '@type': 'PostalAddress',
             streetAddress: 'IPS Building, 1st Floor, Kimathi Street',

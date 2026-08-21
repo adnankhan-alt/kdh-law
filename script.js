@@ -782,11 +782,44 @@ function applyManagedSeo(seo = {}) {
   }
 }
 
+function companySocialUrls(siteContent = {}) {
+  const social = siteContent.social || {};
+  return [social.linkedin, social.facebook, social.x || social.twitter]
+    .map((value) => String(value || '').trim())
+    .filter((value) => /^https:\/\//i.test(value));
+}
+
+function applyCompanySocialLinks(siteContent = {}) {
+  const social = siteContent.social || {};
+  const links = [
+    ['LinkedIn', social.linkedin],
+    ['Facebook', social.facebook],
+    ['X', social.x || social.twitter]
+  ].filter(([, url]) => /^https:\/\//i.test(String(url || '')));
+  if (!links.length) return;
+
+  const connectHeading = [...document.querySelectorAll('footer .footer-links > span')]
+    .find((node) => node.textContent.trim().toLowerCase() === 'connect');
+  const connect = connectHeading?.parentElement;
+  if (!connect) return;
+  connect.querySelectorAll('[data-company-social]').forEach((node) => node.remove());
+  links.forEach(([label, url]) => {
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.target = '_blank';
+    anchor.rel = 'noopener noreferrer';
+    anchor.dataset.companySocial = label.toLowerCase();
+    anchor.textContent = `${label} ↗`;
+    connect.appendChild(anchor);
+  });
+}
+
 function applySiteStructuredData(siteContent = {}) {
   const origin = 'https://www.kdhadvocates.com';
   const contact = siteContent.contact || {};
   const practices = Array.isArray(siteContent.practices) ? siteContent.practices : [];
   const team = Array.isArray(siteContent.team) ? siteContent.team : [];
+  const sameAs = companySocialUrls(siteContent);
   const graph = [
     {
       '@type': 'WebSite',
@@ -802,6 +835,7 @@ function applySiteStructuredData(siteContent = {}) {
       url: `${origin}/`,
       image: siteContent.seo?.ogImage || `${origin}/assets/kdh-law-logo.jpg`,
       description: siteContent.seo?.description || '',
+      ...(sameAs.length ? { sameAs } : {}),
       email: contact.email || undefined,
       telephone: contact.phone || undefined,
       address: {
@@ -1041,6 +1075,7 @@ function renderManagedTeam(team) {
 function applyStructuredSiteContent(siteContent) {
   applyManagedSeo(siteContent.seo || {});
   applySiteStructuredData(siteContent);
+      applyCompanySocialLinks(siteContent);
   renderManagedPractices(siteContent.practices);
   renderManagedTeam(siteContent.team);
   managedAnalyticsEnabled = siteContent.analytics?.enabled !== false;

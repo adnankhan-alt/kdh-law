@@ -605,13 +605,38 @@
   teamManager?.addEventListener('click', (event) => handleRepeatActions(event, teamManager, '.team-card', 'team'));
   practiceManager?.addEventListener('click', (event) => handleRepeatActions(event, practiceManager, '.practice-card', 'practice'));
 
+  function ensureCompanySocialFields() {
+    if ($('#company-social-seo')) return;
+    const form = document.querySelector('#view-seo .post-form');
+    const saveButton = $('#btn-save-seo');
+    if (!form || !saveButton) return;
+    const section = document.createElement('div');
+    section.id = 'company-social-seo';
+    section.className = 'panel';
+    section.style.gridColumn = '1 / -1';
+    section.innerHTML = `
+      <h3 style="margin-top:0">Company social profiles</h3>
+      <p style="margin-top:0;color:#667085">Used for KDH organisation SEO, structured data and public social links. Profile URLs are enough; no API key is needed for this SEO connection.</p>
+      <div class="post-form" style="padding:0;border:0;background:transparent">
+        <label>LinkedIn company page URL<input id="social-linkedin" type="url" placeholder="https://www.linkedin.com/company/..." autocomplete="url"></label>
+        <label>Facebook page URL<input id="social-facebook" type="url" placeholder="https://www.facebook.com/..." autocomplete="url"></label>
+        <label>X / Twitter profile URL<input id="social-x" type="url" placeholder="https://x.com/..." autocomplete="url"></label>
+      </div>`;
+    form.insertBefore(section, saveButton);
+  }
+
   function populateSeo() {
+    ensureCompanySocialFields();
     const seo = siteState?.seo || {};
+    const social = siteState?.social || {};
     $('#seo-title').value = seo.title || '';
     $('#seo-description').value = seo.description || '';
     $('#seo-canonical').value = seo.canonical || '';
     $('#seo-og-image').value = seo.ogImage || '';
     $('#seo-robots').value = seo.robots || 'index,follow';
+    if ($('#social-linkedin')) $('#social-linkedin').value = social.linkedin || '';
+    if ($('#social-facebook')) $('#social-facebook').value = social.facebook || '';
+    if ($('#social-x')) $('#social-x').value = social.x || social.twitter || '';
   }
 
   $('#btn-save-seo')?.addEventListener('click', async () => {
@@ -623,9 +648,16 @@
         ogImage: $('#seo-og-image').value.trim(),
         robots: $('#seo-robots').value
       };
+      const social = {
+        linkedin: $('#social-linkedin')?.value.trim() || '',
+        facebook: $('#social-facebook')?.value.trim() || '',
+        x: $('#social-x')?.value.trim() || ''
+      };
       if (!seo.title || !seo.description) throw new Error('SEO title and description are required.');
-      setStatus('Saving SEO metadata…');
-      await saveSitePatch({ seo }, 'SEO settings saved and homepage metadata synchronised.');
+      const invalidSocial = Object.entries(social).find(([, value]) => value && !/^https:\/\//i.test(value));
+      if (invalidSocial) throw new Error('Company social profile links must use full https:// URLs.');
+      setStatus('Saving SEO and company social profiles…');
+      await saveSitePatch({ seo, social }, 'SEO settings and company social profiles saved to GitHub.');
     } catch (error) { setStatus(error.message); }
   });
 

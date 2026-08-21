@@ -1,34 +1,19 @@
-KDH SEO + LINKEDIN UPGRADE
+KDH COMPANY SOCIAL SEO UPGRADE
 
-Replace/upload these files in the same paths in GitHub:
+Replace these exact files in GitHub:
 
-ROOT
-- index.html
-- insights.html
-- article.html
-- script.js
-- styles.css
-- vercel.json
-- robots.txt
+admin/posts-manager.js
+script.js
+server/routes/public/article.js
+server/routes/public/person.js
+server/routes/public/practice.js
 
-admin/
-- posts-manager.js
-
-api/
-- public.js
-
-server/routes/public/
-- article.js       (NEW)
-- person.js        (NEW)
-- practice.js      (NEW)
-- sitemap.js       (REPLACE)
-
-Do not delete api/cms.js, api/github-callback.js, or api/public.js.
-This upgrade still uses only the existing consolidated Vercel public function.
+No API functions are added. No Vercel environment variables are required.
 
 After deployment:
-1. Admin -> Attorneys: add each person's LinkedIn URL, optional SEO title/description, and confirm profile slug.
-2. Admin -> Practice Areas: confirm slug and optionally add SEO title/description.
-3. Save Attorneys and Save Practice Areas.
-4. New public URLs are /team/<slug>, /expertise/<slug>, and /insights/<article-slug>.
-5. Article and Insights pages include Share on LinkedIn links back to KDH.
+1. Open /admin
+2. Go to SEO
+3. Add the KDH company LinkedIn Page URL, Facebook Page URL, and X/Twitter profile URL
+4. Click Save SEO Settings
+
+These URLs are stored in content/site.json under the social object and are used as company sameAs structured-data references. Individual lawyers continue to use their own LinkedIn field under Attorneys.
