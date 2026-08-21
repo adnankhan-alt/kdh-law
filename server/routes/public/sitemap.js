@@ -23,7 +23,12 @@ module.exports = async function handler(req, res) {
 
   const urls = [
     { loc: `${ORIGIN}/`, image: site.seo?.ogImage || 'assets/lady-justice.webp' },
+    { loc: `${ORIGIN}/the-firm` },
+    { loc: `${ORIGIN}/expertise` },
+    { loc: `${ORIGIN}/team` },
+    { loc: `${ORIGIN}/africa`, image: 'assets/africa-reach.webp' },
     { loc: `${ORIGIN}/insights` },
+    { loc: `${ORIGIN}/contact` },
     { loc: `${ORIGIN}/privacy` },
     { loc: `${ORIGIN}/cookies` }
   ];

@@ -1,0 +1,51 @@
+KDH ADVOCATES — GOOGLE SEO AFTER UPLOAD
+
+WHAT THIS PACKAGE IS DESIGNED TO IMPROVE
+- Google sitelink eligibility for: The firm, Expertise, Team, Africa, Insights, Consultation.
+- Brand/entity understanding for KDH Advocates LLP.
+- Practice-area rankings for Kenyan legal searches.
+- Attorney/name searches and author credibility.
+- People Also Ask / question-intent coverage through useful on-page Q&A (without obsolete FAQ rich-result markup).
+
+AFTER VERCEL SAYS READY
+1. Open these URLs and confirm they load:
+   https://www.kdhadvocates.com/the-firm
+   https://www.kdhadvocates.com/expertise
+   https://www.kdhadvocates.com/team
+   https://www.kdhadvocates.com/africa
+   https://www.kdhadvocates.com/insights
+   https://www.kdhadvocates.com/contact
+   https://www.kdhadvocates.com/sitemap.xml
+
+2. GOOGLE SEARCH CONSOLE
+   - Submit: https://www.kdhadvocates.com/sitemap.xml
+   - Use URL Inspection and request indexing for the homepage plus the six pages above.
+   - Then request indexing for the most important practice pages first:
+     /expertise/corporate-and-commercial
+     /expertise/dispute-resolution
+     /expertise/real-estate-and-construction
+     /expertise/banking-finance-and-capital-markets
+     /expertise/technology-media-telecoms-and-ip
+
+3. GOOGLE BUSINESS PROFILE
+   - Claim/verify KDH Advocates LLP if not already verified.
+   - Use the same firm name, phone, Nairobi office address, website and logo as the website.
+   - Do not create fake branches or locations.
+
+4. COMPANY SOCIAL PROFILES
+   In CMS > SEO, add the official KDH LinkedIn company page, Facebook page and X profile.
+   Keep the organisation name, logo and website URL consistent across those profiles.
+
+5. ATTORNEY PROFILES
+   Add each lawyer's real LinkedIn URL in CMS > Attorneys.
+   Publish Insights under the correct attorney so the article, attorney profile and LinkedIn identity connect.
+
+6. CONTENT STRATEGY
+   Publish useful articles that support practice pages. Each article should have one clear legal search intent and one primary practice area.
+   Prefer specific topics such as “Shareholder Deadlock in Kenya” over generic titles such as “Corporate Law Explained”.
+
+IMPORTANT
+- Google controls sitelinks and Knowledge Panels. No code can force them to appear.
+- The new architecture gives Google clearer dedicated pages and entity signals so it has much better material to choose from.
+- Google removed FAQ rich results from Search in 2026, so the practice pages use human-readable question sections without obsolete FAQ schema.
+- Do not add fake reviews, fake awards, fake office locations or keyword-stuffed pages.

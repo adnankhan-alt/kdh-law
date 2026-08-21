@@ -1,4 +1,8 @@
 const handlers = {
+  africa: require('../server/routes/public/africa'),
+  contact: require('../server/routes/public/contact'),
+  'expertise-index': require('../server/routes/public/expertise-index'),
+  firm: require('../server/routes/public/firm'),
   analytics: require('../server/routes/public/analytics'),
   article: require('../server/routes/public/article'),
   enquiries: require('../server/routes/public/enquiries'),
@@ -8,7 +12,8 @@ const handlers = {
   posts: require('../server/routes/public/posts'),
   person: require('../server/routes/public/person'),
   practice: require('../server/routes/public/practice'),
-  sitemap: require('../server/routes/public/sitemap')
+  sitemap: require('../server/routes/public/sitemap'),
+  'team-index': require('../server/routes/public/team-index')
 };
 
 module.exports = async function handler(req, res) {

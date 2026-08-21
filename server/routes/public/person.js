@@ -64,7 +64,7 @@ function relatedPractices(person) {
 function render404(res) {
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.setHeader('X-Robots-Tag', 'noindex, follow');
-  return res.status(404).send('<!doctype html><html><head><meta charset="utf-8"><meta name="robots" content="noindex,follow"><title>Team member not found | KDH Advocates</title></head><body><main><h1>Team member not found</h1><p><a href="/#team">Meet the KDH team</a></p></main></body></html>');
+  return res.status(404).send('<!doctype html><html><head><meta charset="utf-8"><meta name="robots" content="noindex,follow"><title>Team member not found | KDH Advocates</title></head><body><main><h1>Team member not found</h1><p><a href="/team">Meet the KDH team</a></p></main></body></html>');
 }
 
 module.exports = async function handler(req, res) {
@@ -115,7 +115,7 @@ module.exports = async function handler(req, res) {
         '@id': `${canonical}#breadcrumb`,
         itemListElement: [
           { '@type': 'ListItem', position: 1, name: 'Home', item: `${ORIGIN}/` },
-          { '@type': 'ListItem', position: 2, name: 'Team', item: `${ORIGIN}/#team` },
+          { '@type': 'ListItem', position: 2, name: 'Team', item: `${ORIGIN}/team` },
           { '@type': 'ListItem', position: 3, name: person.name, item: canonical }
         ]
       }
@@ -171,11 +171,11 @@ module.exports = async function handler(req, res) {
   <header class="site-header scrolled" data-header>
     <a class="brand brand-logo" href="/" aria-label="KDH Advocates home"><img src="/assets/kdh-law-logo-transparent.png" alt="KDH Advocates LLP"></a>
     <button class="menu" type="button" aria-expanded="false" aria-controls="nav"><span>Menu</span><i aria-hidden="true"></i></button>
-    <nav id="nav" aria-label="Primary navigation"><a href="/insights">Insights</a><a href="/#firm">The firm</a><a href="/#expertise">Expertise</a><a href="/#reach">Africa</a><a href="/#team">Team</a><a class="nav-cta" href="/#contact">Consultation</a></nav>
+    <nav id="nav" aria-label="Primary navigation"><a href="/insights">Insights</a><a href="/the-firm">The firm</a><a href="/expertise">Expertise</a><a href="/africa">Africa</a><a class="active" href="/team">Team</a><a class="nav-cta" href="/contact">Consultation</a></nav>
   </header>
   <main id="main">
-    <section class="profile-hero"><div class="profile-hero-inner"><div class="profile-portrait"><img src="${escapeHtml(image)}" alt="${escapeHtml(person.alt || `${person.name}, ${person.role} at KDH Advocates`)}"></div><div class="profile-copy"><nav class="seo-breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a><span>/</span><a href="/#team">Team</a><span>/</span><span>${escapeHtml(person.name)}</span></nav><p class="eyebrow">KDH Advocates LLP · Nairobi</p><h1>${escapeHtml(person.name)}</h1><p class="profile-role">${escapeHtml(person.role || '')}</p><p class="profile-focus">${escapeHtml(person.specialties || '')}</p>${linkedInButton}</div></div></section>
-    <section class="profile-main"><div class="profile-grid"><article class="profile-bio"><p class="eyebrow">Profile</p><h2>Experience shaped by commercial context.</h2>${bio}</article><aside class="profile-aside"><section class="profile-panel"><h3>Qualifications</h3><ul>${qualifications}</ul></section><section class="profile-panel"><h3>Related practice areas</h3><div class="profile-practice-links">${practiceLinks}</div></section></aside></div>${authoredInsights}<section class="profile-cta"><h2>Speak with ${escapeHtml(person.name)} and the KDH team.</h2><a class="btn btn-gold" href="/#contact">Start a conversation <span aria-hidden="true">↗</span></a></section></section>
+    <section class="profile-hero"><div class="profile-hero-inner"><div class="profile-portrait"><img src="${escapeHtml(image)}" alt="${escapeHtml(person.alt || `${person.name}, ${person.role} at KDH Advocates`)}"></div><div class="profile-copy"><nav class="seo-breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a><span>/</span><a href="/team">Team</a><span>/</span><span>${escapeHtml(person.name)}</span></nav><p class="eyebrow">KDH Advocates LLP · Nairobi</p><h1>${escapeHtml(person.name)}</h1><p class="profile-role">${escapeHtml(person.role || '')}</p><p class="profile-focus">${escapeHtml(person.specialties || '')}</p>${linkedInButton}</div></div></section>
+    <section class="profile-main"><div class="profile-grid"><article class="profile-bio"><p class="eyebrow">Profile</p><h2>Experience shaped by commercial context.</h2>${bio}</article><aside class="profile-aside"><section class="profile-panel"><h3>Qualifications</h3><ul>${qualifications}</ul></section><section class="profile-panel"><h3>Related practice areas</h3><div class="profile-practice-links">${practiceLinks}</div></section></aside></div>${authoredInsights}<section class="profile-cta"><h2>Speak with ${escapeHtml(person.name)} and the KDH team.</h2><a class="btn btn-gold" href="/contact">Start a conversation <span aria-hidden="true">↗</span></a></section></section>
   </main>
   <footer><div class="footer-bottom"><small>&copy; 2026 KDH Advocates LLP. All rights reserved.</small><p>Trust. Integrity. Results.</p></div></footer>
   <script src="/script.js?v=16" defer></script>

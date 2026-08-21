@@ -92,6 +92,26 @@
   ],
   "rewrites": [
     {
+      "source": "/the-firm",
+      "destination": "/api/public?route=firm"
+    },
+    {
+      "source": "/expertise",
+      "destination": "/api/public?route=expertise-index"
+    },
+    {
+      "source": "/team",
+      "destination": "/api/public?route=team-index"
+    },
+    {
+      "source": "/africa",
+      "destination": "/api/public?route=africa"
+    },
+    {
+      "source": "/contact",
+      "destination": "/api/public?route=contact"
+    },
+    {
       "source": "/insights",
       "destination": "/api/public?route=insights"
     },
