@@ -174,7 +174,7 @@ module.exports = async function handler(req, res) {
     <section class="seo-detail-main"><div class="seo-detail-grid"><div><p class="eyebrow">How we assist</p><h2>Strategic ${escapeHtml(practice.title.toLowerCase())} counsel.</h2><ul class="seo-service-list">${serviceItems}</ul></div><aside class="seo-side"><p class="eyebrow">KDH Advocates LLP</p><h3>Commercially focused legal advice.</h3><p>We combine legal depth with commercial judgement to help clients manage risk, execute transactions and resolve disputes in Kenya and across Africa.</p><a class="btn btn-gold" href="/#contact">Discuss your matter <span aria-hidden="true">↗</span></a></aside></div>${teamCards ? `<section class="seo-team-section"><p class="eyebrow">Relevant experience</p><h2>Meet lawyers working across this area.</h2><div class="seo-team-grid">${teamCards}</div></section>` : ''}${insightCards ? `<section class="seo-insights-section"><p class="eyebrow">KDH Insights</p><h2>Analysis related to ${escapeHtml(practice.title)}.</h2><div class="seo-insights-grid">${insightCards}</div></section>` : ''}<section class="seo-cta"><h2>Need advice on ${escapeHtml(practice.title.toLowerCase())}?</h2><a class="btn btn-gold" href="/#contact">Start a conversation <span aria-hidden="true">↗</span></a></section></section>
   </main>
   <footer><div class="footer-bottom"><small>&copy; 2026 KDH Advocates LLP. All rights reserved.</small><p>Trust. Integrity. Results.</p></div></footer>
-  <script src="/script.js?v=15" defer></script>
+  <script src="/script.js?v=16" defer></script>
 </body>
 </html>`;
 

@@ -1234,9 +1234,18 @@ async function loadManagedContent() {
       });
     }
 
-    let pageResponse = await fetch("/api/public?route=page-content", { cache: "no-store" });
-    if (!pageResponse.ok) pageResponse = await fetch("/content/page.json", { cache: "no-store" });
-    if (pageResponse.ok) applyVisualContent(await pageResponse.json());
+    // Homepage visual-editor data is positional and must NEVER be applied to
+    // server-rendered SEO pages such as /expertise/:slug or /team/:slug.
+    // Applying it outside the homepage can overwrite navigation hrefs with old
+    // hash-only values (#team, #firm, etc.), trapping users on the current page.
+    const pathname = window.location.pathname.replace(/\/+$/, "") || "/";
+    const isHomepage = pathname === "/" || pathname === "/index.html";
+
+    if (isHomepage || visualMode) {
+      let pageResponse = await fetch("/api/public?route=page-content", { cache: "no-store" });
+      if (!pageResponse.ok) pageResponse = await fetch("/content/page.json", { cache: "no-store" });
+      if (pageResponse.ok) applyVisualContent(await pageResponse.json());
+    }
 
     // Structured CMS collections intentionally win over old visual-editor keys.
     if (siteContent) applyStructuredSiteContent(siteContent);

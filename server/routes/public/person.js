@@ -178,7 +178,7 @@ module.exports = async function handler(req, res) {
     <section class="profile-main"><div class="profile-grid"><article class="profile-bio"><p class="eyebrow">Profile</p><h2>Experience shaped by commercial context.</h2>${bio}</article><aside class="profile-aside"><section class="profile-panel"><h3>Qualifications</h3><ul>${qualifications}</ul></section><section class="profile-panel"><h3>Related practice areas</h3><div class="profile-practice-links">${practiceLinks}</div></section></aside></div>${authoredInsights}<section class="profile-cta"><h2>Speak with ${escapeHtml(person.name)} and the KDH team.</h2><a class="btn btn-gold" href="/#contact">Start a conversation <span aria-hidden="true">↗</span></a></section></section>
   </main>
   <footer><div class="footer-bottom"><small>&copy; 2026 KDH Advocates LLP. All rights reserved.</small><p>Trust. Integrity. Results.</p></div></footer>
-  <script src="/script.js?v=15" defer></script>
+  <script src="/script.js?v=16" defer></script>
 </body>
 </html>`;
 
