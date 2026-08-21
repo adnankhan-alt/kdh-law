@@ -782,6 +782,67 @@ function applyManagedSeo(seo = {}) {
   }
 }
 
+function applySiteStructuredData(siteContent = {}) {
+  const origin = 'https://www.kdhadvocates.com';
+  const contact = siteContent.contact || {};
+  const practices = Array.isArray(siteContent.practices) ? siteContent.practices : [];
+  const team = Array.isArray(siteContent.team) ? siteContent.team : [];
+  const graph = [
+    {
+      '@type': 'WebSite',
+      '@id': `${origin}/#website`,
+      name: 'KDH Advocates LLP',
+      alternateName: 'KDH Advocates',
+      url: `${origin}/`
+    },
+    {
+      '@type': 'LegalService',
+      '@id': `${origin}/#legal-service`,
+      name: 'KDH Advocates LLP',
+      url: `${origin}/`,
+      image: siteContent.seo?.ogImage || `${origin}/assets/kdh-law-logo.jpg`,
+      description: siteContent.seo?.description || '',
+      email: contact.email || undefined,
+      telephone: contact.phone || undefined,
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress: contact.office || 'IPS Building, 1st Floor, Kimathi Street',
+        addressLocality: 'Nairobi',
+        addressCountry: 'KE'
+      },
+      areaServed: [{ '@type': 'Country', name: 'Kenya' }, { '@type': 'Continent', name: 'Africa' }],
+      hasOfferCatalog: {
+        '@type': 'OfferCatalog',
+        name: 'Legal practice areas',
+        itemListElement: practices.map((practice) => ({
+          '@type': 'Offer',
+          itemOffered: {
+            '@type': 'Service',
+            name: practice.title || '',
+            url: `${origin}/expertise/${safeId(practice.slug || practice.title, 'practice')}`,
+            description: practice.intro || ''
+          }
+        }))
+      },
+      employee: team.map((person) => ({
+        '@type': 'Person',
+        name: person.name || '',
+        jobTitle: person.role || '',
+        url: `${origin}/team/${safeId(person.id || person.name, 'person')}`,
+        ...(person.linkedin ? { sameAs: [person.linkedin] } : {})
+      }))
+    }
+  ];
+  let node = document.getElementById('kdh-site-structured-data');
+  if (!node) {
+    node = document.createElement('script');
+    node.type = 'application/ld+json';
+    node.id = 'kdh-site-structured-data';
+    document.head.appendChild(node);
+  }
+  node.textContent = JSON.stringify({ '@context': 'https://schema.org', '@graph': graph });
+}
+
 function syncPracticeSelect(practices = []) {
   const select = document.querySelector('#area');
   if (!select) return;
@@ -834,7 +895,13 @@ function renderManagedPractices(practices) {
       item.textContent = service;
       list.appendChild(item);
     });
-    detail.append(intro, list);
+    const practiceSlug = safeId(practice.slug || practice.title, `practice-${index + 1}`);
+    const practiceLink = document.createElement('a');
+    practiceLink.className = 'practice-page-link';
+    practiceLink.href = `/expertise/${encodeURIComponent(practiceSlug)}`;
+    practiceLink.textContent = `Explore ${practice.title || 'this'} practice`;
+    practiceLink.setAttribute('aria-label', `Explore ${practice.title || 'this practice'} legal services`);
+    detail.append(intro, list, practiceLink);
     details.append(summary, detail);
     container.appendChild(details);
     bindPracticeItem(details);
@@ -887,7 +954,26 @@ function renderManagedTeam(team) {
     arrow.setAttribute('aria-hidden', 'true');
     arrow.textContent = '↗';
     button.appendChild(arrow);
-    copy.append(role, name, specialties, button);
+
+    const actions = document.createElement('div');
+    actions.className = 'team-card-actions';
+    const profileLink = document.createElement('a');
+    profileLink.className = 'profile-page-link';
+    profileLink.href = `/team/${encodeURIComponent(safeId(person.id || person.name, `person-${index + 1}`))}`;
+    profileLink.textContent = 'Profile';
+    profileLink.setAttribute('aria-label', `View the full profile of ${person.name || 'this KDH attorney'}`);
+    actions.appendChild(profileLink);
+    if (person.linkedin) {
+      const linkedIn = document.createElement('a');
+      linkedIn.className = 'linkedin-profile-link';
+      linkedIn.href = person.linkedin;
+      linkedIn.target = '_blank';
+      linkedIn.rel = 'noopener noreferrer';
+      linkedIn.textContent = 'LinkedIn';
+      linkedIn.setAttribute('aria-label', `${person.name || 'KDH attorney'} on LinkedIn`);
+      actions.appendChild(linkedIn);
+    }
+    copy.append(role, name, specialties, button, actions);
     article.append(portrait, copy);
     people.appendChild(article);
     bindProfileButton(button);
@@ -920,6 +1006,23 @@ function renderManagedTeam(team) {
       qualifications.appendChild(document.createTextNode(qualification));
     });
     personColumn.append(dialogImage, dialogRole, dialogName, qualifications);
+    const dialogActions = document.createElement('div');
+    dialogActions.className = 'dialog-profile-actions';
+    const fullProfile = document.createElement('a');
+    fullProfile.href = `/team/${encodeURIComponent(safeId(person.id || person.name, `person-${index + 1}`))}`;
+    fullProfile.className = 'profile-page-link';
+    fullProfile.textContent = 'Full profile ↗';
+    dialogActions.appendChild(fullProfile);
+    if (person.linkedin) {
+      const dialogLinkedIn = document.createElement('a');
+      dialogLinkedIn.href = person.linkedin;
+      dialogLinkedIn.target = '_blank';
+      dialogLinkedIn.rel = 'noopener noreferrer';
+      dialogLinkedIn.className = 'linkedin-profile-link';
+      dialogLinkedIn.textContent = 'LinkedIn ↗';
+      dialogActions.appendChild(dialogLinkedIn);
+    }
+    personColumn.appendChild(dialogActions);
 
     const bio = document.createElement('div');
     bio.className = 'dialog-bio';
@@ -937,6 +1040,7 @@ function renderManagedTeam(team) {
 
 function applyStructuredSiteContent(siteContent) {
   applyManagedSeo(siteContent.seo || {});
+  applySiteStructuredData(siteContent);
   renderManagedPractices(siteContent.practices);
   renderManagedTeam(siteContent.team);
   managedAnalyticsEnabled = siteContent.analytics?.enabled !== false;
@@ -960,7 +1064,7 @@ function createLatestInsightCard(post) {
 
   const link = document.createElement('a');
   link.className = 'latest-insight-card-link';
-  link.href = `/article?slug=${encodeURIComponent(post.slug || '')}`;
+  link.href = `/insights/${encodeURIComponent(post.slug || '')}`;
   link.setAttribute('aria-label', `Read ${post.title || 'KDH insight'}`);
 
   const media = document.createElement('div');

@@ -464,10 +464,14 @@
       <div class="repeat-grid">
         <label>Name<input data-field="name" value="${escapeAttr(person.name)}"></label>
         <label>Role / title<input data-field="role" value="${escapeAttr(person.role)}"></label>
+        <label>Profile slug <small>SEO URL</small><input data-field="slug" value="${escapeAttr(person.id || '')}" placeholder="yvonne-kinya-kiruja"></label>
+        <label>LinkedIn profile URL<input data-field="linkedin" type="url" value="${escapeAttr(person.linkedin || '')}" placeholder="https://www.linkedin.com/in/..."></label>
         <label class="full">Practice focus<input data-field="specialties" value="${escapeAttr(person.specialties)}"></label>
         <label>Portrait URL<input data-field="image" value="${escapeAttr(person.image)}"></label>
         <label>Upload portrait<input class="team-image-upload" type="file" accept="image/*"></label>
         <label class="full">Image alt text<input data-field="alt" value="${escapeAttr(person.alt || person.name)}"></label>
+        <label class="full">SEO title <small>Recommended: ~50–60 characters</small><input data-field="seoTitle" value="${escapeAttr(person.seoTitle || '')}" placeholder="Name | Role | KDH Advocates Kenya"></label>
+        <label class="full">SEO description <small>Recommended: ~140–160 characters</small><textarea data-field="seoDescription" rows="3" placeholder="Search description for this lawyer profile">${escapeHtml(person.seoDescription || '')}</textarea></label>
         <label class="full">Qualifications <small>One per line</small><textarea data-field="qualifications" rows="3">${escapeHtml((person.qualifications || []).join('\n'))}</textarea></label>
         <label class="full">Biography <small>Separate paragraphs with a blank line</small><textarea data-field="bio" rows="9">${escapeHtml((person.bio || []).join('\n\n'))}</textarea></label>
       </div>
@@ -476,23 +480,31 @@
   }
 
   function collectTeam() {
-    return $$('.team-card', teamManager).map((card, index) => ({
-      id: (card.querySelector('[data-field="name"]').value || `person-${index + 1}`).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
-      name: card.querySelector('[data-field="name"]').value.trim(),
-      role: card.querySelector('[data-field="role"]').value.trim(),
-      specialties: card.querySelector('[data-field="specialties"]').value.trim(),
-      image: card.querySelector('[data-field="image"]').value.trim(),
-      alt: card.querySelector('[data-field="alt"]').value.trim(),
-      qualifications: card.querySelector('[data-field="qualifications"]').value.split('\n').map((v) => v.trim()).filter(Boolean),
-      bio: card.querySelector('[data-field="bio"]').value.split(/\n\s*\n/).map((v) => v.trim()).filter(Boolean)
-    }));
+    return $$('.team-card', teamManager).map((card, index) => {
+      const name = card.querySelector('[data-field="name"]').value.trim();
+      const requestedSlug = card.querySelector('[data-field="slug"]').value.trim();
+      const id = (requestedSlug || name || `person-${index + 1}`).toLowerCase().replace(/&/g, ' and ').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      return {
+        id,
+        name,
+        role: card.querySelector('[data-field="role"]').value.trim(),
+        linkedin: card.querySelector('[data-field="linkedin"]').value.trim(),
+        specialties: card.querySelector('[data-field="specialties"]').value.trim(),
+        image: card.querySelector('[data-field="image"]').value.trim(),
+        alt: card.querySelector('[data-field="alt"]').value.trim(),
+        seoTitle: card.querySelector('[data-field="seoTitle"]').value.trim(),
+        seoDescription: card.querySelector('[data-field="seoDescription"]').value.trim(),
+        qualifications: card.querySelector('[data-field="qualifications"]').value.split('\n').map((v) => v.trim()).filter(Boolean),
+        bio: card.querySelector('[data-field="bio"]').value.split(/\n\s*\n/).map((v) => v.trim()).filter(Boolean)
+      };
+    });
   }
 
   $('#btn-add-team')?.addEventListener('click', () => {
     if (!canEdit()) return;
     siteState = siteState || {};
     const currentTeam = teamManager?.querySelector('.team-card') ? collectTeam() : (siteState.team || []);
-    siteState.team = [...currentTeam, { name: 'New Attorney', role: 'Associate', specialties: '', image: '', alt: '', qualifications: [], bio: [] }];
+    siteState.team = [...currentTeam, { id: '', name: 'New Attorney', role: 'Associate', linkedin: '', specialties: '', image: '', alt: '', seoTitle: '', seoDescription: '', qualifications: [], bio: [] }];
     renderTeamManager();
   });
 
@@ -513,9 +525,11 @@
   $('#btn-save-team')?.addEventListener('click', async () => {
     try {
       const team = collectTeam();
-      if (team.some((person) => !person.name || !person.role)) throw new Error('Every attorney needs a name and role.');
+      if (team.some((person) => !person.name || !person.role || !person.id)) throw new Error('Every attorney needs a name, role and profile slug.');
+      const badLinkedIn = team.find((person) => person.linkedin && !/^https:\/\/([a-z]{2,3}\.)?(www\.)?linkedin\.com\//i.test(person.linkedin));
+      if (badLinkedIn) throw new Error(`LinkedIn URL for ${badLinkedIn.name} must be a linkedin.com profile URL.`);
       setStatus('Saving attorneys…');
-      await saveSitePatch({ team }, 'Attorney profiles saved to GitHub.');
+      await saveSitePatch({ team }, 'Attorney profiles, LinkedIn links and SEO metadata saved to GitHub.');
       $('#metric-team').textContent = String(team.length);
     } catch (error) { setStatus(error.message); }
   });
@@ -528,6 +542,9 @@
       <div class="repeat-head"><h3>${escapeHtml(practice.title || `Practice ${index + 1}`)}</h3>${repeatButtons(index, practices.length)}</div>
       <div class="repeat-grid">
         <label class="full">Practice name<input data-field="title" value="${escapeAttr(practice.title)}"></label>
+        <label>Practice slug <small>SEO URL</small><input data-field="slug" value="${escapeAttr(practice.slug || '')}" placeholder="corporate-commercial"></label>
+        <label>SEO title <small>Recommended: ~50–60 characters</small><input data-field="seoTitle" value="${escapeAttr(practice.seoTitle || '')}" placeholder="Corporate & Commercial Lawyers in Kenya | KDH"></label>
+        <label class="full">SEO description <small>Recommended: ~140–160 characters</small><textarea data-field="seoDescription" rows="3" placeholder="Search description for this practice area">${escapeHtml(practice.seoDescription || '')}</textarea></label>
         <label class="full">Introduction<textarea data-field="intro" rows="3">${escapeHtml(practice.intro)}</textarea></label>
         <label class="full">Services <small>One item per line</small><textarea class="list-editor" data-field="services" rows="7">${escapeHtml((practice.services || []).join('\n'))}</textarea></label>
       </div>
@@ -536,27 +553,35 @@
   }
 
   function collectPractices() {
-    return $$('.practice-card', practiceManager).map((card) => ({
-      title: card.querySelector('[data-field="title"]').value.trim(),
-      intro: card.querySelector('[data-field="intro"]').value.trim(),
-      services: card.querySelector('[data-field="services"]').value.split('\n').map((v) => v.trim()).filter(Boolean)
-    }));
+    return $$('.practice-card', practiceManager).map((card, index) => {
+      const title = card.querySelector('[data-field="title"]').value.trim();
+      const requestedSlug = card.querySelector('[data-field="slug"]').value.trim();
+      const slug = (requestedSlug || title || `practice-${index + 1}`).toLowerCase().replace(/&/g, ' and ').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      return {
+        title,
+        slug,
+        seoTitle: card.querySelector('[data-field="seoTitle"]').value.trim(),
+        seoDescription: card.querySelector('[data-field="seoDescription"]').value.trim(),
+        intro: card.querySelector('[data-field="intro"]').value.trim(),
+        services: card.querySelector('[data-field="services"]').value.split('\n').map((v) => v.trim()).filter(Boolean)
+      };
+    });
   }
 
   $('#btn-add-practice')?.addEventListener('click', () => {
     if (!canEdit()) return;
     siteState = siteState || {};
     const currentPractices = practiceManager?.querySelector('.practice-card') ? collectPractices() : (siteState.practices || []);
-    siteState.practices = [...currentPractices, { title: 'New Practice Area', intro: '', services: [] }];
+    siteState.practices = [...currentPractices, { title: 'New Practice Area', slug: '', seoTitle: '', seoDescription: '', intro: '', services: [] }];
     renderPracticeManager();
   });
 
   $('#btn-save-practices')?.addEventListener('click', async () => {
     try {
       const practices = collectPractices();
-      if (practices.some((practice) => !practice.title)) throw new Error('Every practice area needs a name.');
+      if (practices.some((practice) => !practice.title || !practice.slug)) throw new Error('Every practice area needs a name and SEO slug.');
       setStatus('Saving practice areas…');
-      await saveSitePatch({ practices }, 'Practice areas saved to GitHub.');
+      await saveSitePatch({ practices }, 'Practice areas and SEO metadata saved to GitHub.');
       $('#metric-practices').textContent = String(practices.length);
     } catch (error) { setStatus(error.message); }
   });

@@ -3,37 +3,135 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
+  <script>
+    (() => {
+      const slug = new URLSearchParams(location.search).get('slug');
+      if (slug && location.pathname.replace(/\/$/, '') === '/article') {
+        location.replace(`/insights/${encodeURIComponent(slug)}`);
+      }
+    })();
+  </script>
   <meta name="theme-color" content="#001759">
+  <meta name="robots" content="index,follow">
   <title>Article | KDH Advocates LLP</title>
   <link rel="icon" type="image/png" sizes="256x256" href="assets/kdh-favicon.png">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=11">
   <style>
-    .article-hero { width: 100%; height: 50vh; min-height: 400px; object-fit: cover; display: block; margin-bottom: -4rem; } .article-container { max-width: 800px; margin: 0 auto; padding: 8rem 5% 4rem; position: relative; z-index: 2; background: white; border-radius: 12px 12px 0 0; }
-    .article-header { margin-bottom: 3rem; text-align: center; }
-    .article-header h1 { font-family: 'Playfair Display', serif; font-size: 2.5rem; color: #001759; margin-bottom: 1rem; }
-    .article-meta { color: #666; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.85rem; }
-    .article-content { font-size: 1.1rem; line-height: 1.8; color: #222; }
-    .article-content h2 { font-family: 'Playfair Display', serif; color: #001759; margin-top: 2rem; margin-bottom: 1rem; }
-    .article-content p { margin-bottom: 1.5rem; }
-    .article-content ul, .article-content ol { margin-bottom: 1.5rem; padding-left: 2rem; } .article-content img { max-width: 100%; height: auto; border-radius: 8px; margin: 2rem 0; } .article-content iframe.ql-video { width: 100%; height: 450px; border: none; margin: 2rem 0; }
-    .back-link { display: inline-block; margin-top: 3rem; font-weight: 600; color: #d4af37; text-decoration: none; }
-    .back-link:hover { text-decoration: underline; }
+    :root { --article-max: 1220px; --reading-max: 920px; }
+    body.article-page { background: #f7f6f2; }
+    .article-page .site-header { position: fixed; background: rgba(255,255,255,.96); color: var(--navy); box-shadow: 0 1px 0 rgba(0,23,89,.10); backdrop-filter: blur(18px); }
+    .article-page .site-header .brand-logo img { filter: none; }
+    .article-page .site-header nav a.active::after { transform: scaleX(1); }
+    .article-progress { position: fixed; z-index: 1200; top: 0; left: 0; width: 0; height: 3px; background: var(--gold-bright); }
+
+    .article-cover-wrap { padding-top: var(--header-height); background: var(--navy-deep); }
+    .article-cover { width: 100%; height: clamp(360px, 58vw, 650px); object-fit: cover; display: block; }
+    .article-cover-shade { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,12,51,.08), rgba(0,12,51,.38)); pointer-events: none; }
+    .article-cover-frame { position: relative; max-width: 1600px; margin: 0 auto; overflow: hidden; }
+    .article-cover-placeholder { height: 180px; background: linear-gradient(120deg, var(--navy-deep), var(--navy-soft)); }
+
+    .article-shell { width: min(calc(100% - 2 * var(--section-x)), var(--article-max)); margin: clamp(-7rem,-8vw,-4rem) auto 5rem; position: relative; z-index: 2; background: #fff; box-shadow: 0 26px 80px rgba(0,12,51,.12); }
+    .article-header { padding: clamp(3rem,6vw,6rem) clamp(2rem,7vw,7rem) clamp(2.5rem,4vw,4rem); border-bottom: 1px solid var(--line); text-align: left; }
+    .article-kicker { display: flex; align-items: center; gap: .8rem; color: var(--gold); font-size: .72rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+    .article-kicker::before { content: ""; width: 34px; height: 1px; background: currentColor; }
+    .article-header h1 { max-width: 1050px; margin: 1.25rem 0 1.5rem; color: var(--navy); font-family: "Playfair Display", Georgia, serif; font-size: clamp(2.7rem,5.2vw,5.6rem); font-weight: 600; letter-spacing: -.045em; line-height: .98; }
+    .article-deck { max-width: 840px; margin: 0 0 2rem; color: var(--slate); font-size: clamp(1rem,1.4vw,1.22rem); line-height: 1.65; }
+    .article-meta { display: flex; flex-wrap: wrap; gap: .65rem 1.5rem; align-items: center; color: var(--slate); font-size: .78rem; font-weight: 700; }
+    .article-meta span + span { position: relative; }
+    .article-meta span + span::before { content: ""; position: absolute; left: -.8rem; top: 50%; width: 3px; height: 3px; border-radius: 50%; background: var(--gold); }
+
+    .article-body-wrap { padding: clamp(3rem,6vw,6rem) clamp(2rem,7vw,7rem) clamp(4rem,7vw,7rem); }
+    .article-content { width: min(100%, var(--reading-max)); margin: 0 auto; color: #18213a; font-size: clamp(1.05rem,1.15vw,1.18rem); line-height: 1.9; }
+    .article-content p { margin: 0 0 1.6rem; }
+    .article-content h1,
+    .article-content h2,
+    .article-content h3 { max-width: 100%; color: var(--navy); font-family: "Playfair Display", Georgia, serif; letter-spacing: -.035em; text-wrap: balance; }
+    .article-content h1 { margin: 3.5rem 0 1.35rem; font-size: clamp(2.2rem,3.5vw,3.6rem); line-height: 1.05; }
+    .article-content h2 { margin: 3.5rem 0 1.2rem; font-size: clamp(1.9rem,3vw,3rem); line-height: 1.08; }
+    .article-content h3 { margin: 2.7rem 0 1rem; font-size: clamp(1.45rem,2.1vw,2.05rem); line-height: 1.15; }
+    .article-content ul,
+    .article-content ol { margin: 0 0 1.8rem; padding-left: 1.4rem; }
+    .article-content li { margin-bottom: .65rem; padding-left: .35rem; }
+    .article-content strong { color: #081d56; }
+    .article-content a { color: #866c13; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    .article-content blockquote { margin: 2.7rem 0; padding: 1.2rem 0 1.2rem 1.7rem; border-left: 4px solid var(--gold-bright); color: var(--navy); font-family: "Playfair Display", Georgia, serif; font-size: clamp(1.35rem,2vw,1.8rem); line-height: 1.5; }
+    .article-content img { width: min(1120px, calc(100% + 10vw)); max-width: none; height: auto; margin: 2.8rem 0 2.8rem 50%; transform: translateX(-50%); border-radius: 2px; box-shadow: 0 14px 42px rgba(0,12,51,.10); }
+    .article-content iframe.ql-video { width: min(1120px, calc(100% + 10vw)); height: min(58vw, 560px); margin: 2.8rem 0 2.8rem 50%; transform: translateX(-50%); border: 0; }
+
+    .article-end { width: min(100%, var(--reading-max)); margin: 4rem auto 0; padding-top: 2rem; border-top: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+    .back-link { display: inline-flex; gap: .5rem; align-items: center; color: var(--navy); font-size: .8rem; font-weight: 800; }
+    .article-consult { display: inline-flex; align-items: center; gap: .6rem; padding: .8rem 1rem; background: var(--gold-bright); color: var(--navy-deep); font-size: .76rem; font-weight: 800; }
+
+    .article-footer-cta { background: var(--navy-deep); color: white; }
+    .article-footer-cta-inner { width: min(calc(100% - 2 * var(--section-x)), var(--article-max)); margin: 0 auto; padding: clamp(4rem,7vw,7rem) 0; display: grid; grid-template-columns: 1.25fr .75fr; gap: 3rem; align-items: end; }
+    .article-footer-cta p { margin-bottom: .6rem; color: var(--gold-bright); font-size: .72rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+    .article-footer-cta h2 { max-width: 760px; margin: 0; color: #fff; font-family: "Playfair Display", Georgia, serif; font-size: clamp(2.3rem,4vw,4.6rem); }
+    .article-footer-cta .btn { justify-self: end; }
+
+    @media (max-width: 900px) {
+      .article-page .site-header nav { background: #fff; color: var(--navy); }
+      .article-shell { width: min(calc(100% - 1.2rem), var(--article-max)); margin-top: -2.5rem; }
+      .article-header, .article-body-wrap { padding-left: clamp(1.3rem,5vw,2.5rem); padding-right: clamp(1.3rem,5vw,2.5rem); }
+      .article-content img, .article-content iframe.ql-video { width: 100%; max-width: 100%; margin-left: 0; transform: none; }
+      .article-footer-cta-inner { grid-template-columns: 1fr; align-items: start; }
+      .article-footer-cta .btn { justify-self: start; }
+    }
+    @media (max-width: 640px) {
+      .article-cover { height: 320px; }
+      .article-header h1 { font-size: clamp(2.35rem,11vw,3.5rem); }
+      .article-meta { gap: .4rem .9rem; }
+      .article-meta span + span::before { display: none; }
+      .article-end { align-items: flex-start; flex-direction: column; }
+    }
   </style>
 </head>
-<body>
-  <header class="site-header">
+<body class="article-page">
+  <div class="article-progress" id="article-progress" aria-hidden="true"></div>
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="site-header scrolled" data-header>
     <a class="brand brand-logo" href="/" aria-label="KDH Advocates home">
       <img src="assets/kdh-law-logo-transparent.png" alt="KDH Advocates LLP">
     </a>
-    <nav id="nav">
-      <a href="/insights">All Insights</a>
+    <button class="menu" type="button" aria-expanded="false" aria-controls="nav">
+      <span>Menu</span><i aria-hidden="true"></i>
+    </button>
+    <nav id="nav" aria-label="Primary navigation">
+      <a href="/#firm">The firm</a>
+      <a href="/#expertise">Expertise</a>
+      <a href="/#reach">Africa</a>
+      <a href="/#team">Team</a>
+      <a class="active" href="/insights">Insights</a>
+      <a class="nav-cta" href="/#contact">Consultation</a>
     </nav>
   </header>
 
   <main id="main">
-    <div id="article-hero-container"></div><article class="article-container" id="article-container">
-      <div style="text-align:center; padding: 4rem;">Loading article...</div>
+    <div class="article-cover-wrap">
+      <div class="article-cover-frame" id="article-hero-container">
+        <div class="article-cover-placeholder" aria-hidden="true"></div>
+      </div>
+    </div>
+
+    <article class="article-shell" id="article-container">
+      <header class="article-header">
+        <div class="article-kicker">KDH Insights</div>
+        <h1>Loading article...</h1>
+      </header>
     </article>
+
+    <section class="article-footer-cta" aria-label="Consult KDH Advocates">
+      <div class="article-footer-cta-inner">
+        <div>
+          <p>Strategic legal counsel</p>
+          <h2>Need advice on a matter that cannot wait?</h2>
+        </div>
+        <a class="btn btn-gold" href="/#contact">Start a conversation <span aria-hidden="true">&#8599;</span></a>
+      </div>
+    </section>
   </main>
 
   <footer>
@@ -44,36 +142,33 @@
   </footer>
 
   <script>
+    const menu = document.querySelector('.menu');
+    const nav = document.querySelector('#nav');
+    menu?.addEventListener('click', () => {
+      const open = menu.getAttribute('aria-expanded') === 'true';
+      menu.setAttribute('aria-expanded', String(!open));
+      nav?.classList.toggle('open', !open);
+    });
+    nav?.querySelectorAll('a').forEach((link) => link.addEventListener('click', () => {
+      nav.classList.remove('open');
+      menu?.setAttribute('aria-expanded', 'false');
+    }));
+
     function setMeta(name, content) {
       let meta = document.querySelector(`meta[name="${name}"]`);
-      if (!meta) {
-        meta = document.createElement("meta");
-        meta.name = name;
-        document.head.appendChild(meta);
-      }
+      if (!meta) { meta = document.createElement('meta'); meta.name = name; document.head.appendChild(meta); }
       meta.content = content;
     }
-
     function setProperty(property, content) {
       let meta = document.querySelector(`meta[property="${property}"]`);
-      if (!meta) {
-        meta = document.createElement("meta");
-        meta.setAttribute("property", property);
-        document.head.appendChild(meta);
-      }
+      if (!meta) { meta = document.createElement('meta'); meta.setAttribute('property', property); document.head.appendChild(meta); }
       meta.content = content;
     }
-
     function setCanonical(url) {
       let link = document.querySelector('link[rel="canonical"]');
-      if (!link) {
-        link = document.createElement('link');
-        link.rel = 'canonical';
-        document.head.appendChild(link);
-      }
+      if (!link) { link = document.createElement('link'); link.rel = 'canonical'; document.head.appendChild(link); }
       link.href = url;
     }
-
     function safeArticleFragment(html) {
       const template = document.createElement('template');
       template.innerHTML = String(html || '');
@@ -96,72 +191,78 @@
       });
       return template.content;
     }
+    function readingMinutes(html) {
+      const div = document.createElement('div');
+      div.innerHTML = html || '';
+      const words = (div.textContent || '').trim().split(/\s+/).filter(Boolean).length;
+      return Math.max(1, Math.ceil(words / 220));
+    }
+    function updateProgress() {
+      const article = document.querySelector('.article-shell');
+      const bar = document.getElementById('article-progress');
+      if (!article || !bar) return;
+      const start = article.offsetTop;
+      const end = start + article.offsetHeight - window.innerHeight;
+      const ratio = end <= start ? 1 : Math.min(1, Math.max(0, (window.scrollY - start) / (end - start)));
+      bar.style.width = `${ratio * 100}%`;
+    }
+    window.addEventListener('scroll', updateProgress, { passive: true });
+    window.addEventListener('resize', updateProgress);
 
     async function loadArticle() {
-      const slug = new URLSearchParams(window.location.search).get("slug");
-      const container = document.getElementById("article-container");
-      if (!slug) {
-        container.innerHTML = "<h2>Article not found</h2>";
-        return;
-      }
-
+      const slug = new URLSearchParams(window.location.search).get('slug');
+      const container = document.getElementById('article-container');
+      if (!slug) { container.innerHTML = '<header class="article-header"><div class="article-kicker">KDH Insights</div><h1>Article not found</h1></header>'; return; }
       try {
-        const res = await fetch("/api/public?route=posts");
-        if (!res.ok) throw new Error("Unable to load posts");
+        const res = await fetch('/api/public?route=posts', { cache: 'no-store' });
+        if (!res.ok) throw new Error('Unable to load posts');
         const posts = await res.json();
         const post = posts.find((item) => item.slug === slug);
-        if (!post) throw new Error("Not found");
+        if (!post) throw new Error('Not found');
 
         const seoTitle = post.seoTitle || post.title;
         const seoDescription = post.seoDescription || post.summary || '';
-        const canonical = `https://www.kdhadvocates.com/article?slug=${encodeURIComponent(post.slug)}`;
+        const canonical = `https://www.kdhadvocates.com/insights/${encodeURIComponent(post.slug)}`;
         document.title = `${seoTitle} | KDH Advocates LLP`;
-        if (seoDescription) setMeta("description", seoDescription);
-        setProperty('og:title', seoTitle);
-        if (seoDescription) setProperty('og:description', seoDescription);
-        setProperty('og:type', 'article');
-        setProperty('og:url', canonical);
+        if (seoDescription) setMeta('description', seoDescription);
+        setProperty('og:title', seoTitle); if (seoDescription) setProperty('og:description', seoDescription);
+        setProperty('og:type', 'article'); setProperty('og:url', canonical);
         if (post.coverImage) setProperty('og:image', post.coverImage);
         setMeta('twitter:card', post.coverImage ? 'summary_large_image' : 'summary');
-        setMeta('twitter:title', seoTitle);
-        if (seoDescription) setMeta('twitter:description', seoDescription);
-        if (post.coverImage) setMeta('twitter:image', post.coverImage);
-        setCanonical(canonical);
+        setMeta('twitter:title', seoTitle); if (seoDescription) setMeta('twitter:description', seoDescription);
+        if (post.coverImage) setMeta('twitter:image', post.coverImage); setCanonical(canonical);
 
+        const heroContainer = document.getElementById('article-hero-container');
         if (post.coverImage) {
-          const hero = document.createElement("img");
-          hero.src = post.coverImage;
-          hero.className = "article-hero";
-          hero.alt = post.title || "KDH Advocates article";
-          document.getElementById("article-hero-container").replaceChildren(hero);
+          const hero = document.createElement('img');
+          hero.src = post.coverImage; hero.className = 'article-cover'; hero.alt = post.title || 'KDH Advocates article';
+          const shade = document.createElement('div'); shade.className = 'article-cover-shade';
+          heroContainer.replaceChildren(hero, shade);
         }
 
-        container.replaceChildren();
-        const header = document.createElement("header");
-        header.className = "article-header";
-        const meta = document.createElement("div");
-        meta.className = "article-meta";
-        meta.textContent = new Date(post.date || post.scheduledAt || Date.now()).toLocaleDateString("en-GB", { year: "numeric", month: "long", day: "numeric" });
-        const title = document.createElement("h1");
-        title.textContent = post.title || "Insight";
-        header.append(meta, title);
+        const header = document.createElement('header'); header.className = 'article-header';
+        const kicker = document.createElement('div'); kicker.className = 'article-kicker'; kicker.textContent = 'KDH Insights';
+        const title = document.createElement('h1'); title.textContent = post.title || 'Insight';
+        const deck = document.createElement('p'); deck.className = 'article-deck'; deck.textContent = post.summary || '';
+        const meta = document.createElement('div'); meta.className = 'article-meta';
+        const date = document.createElement('span');
+        date.textContent = new Date(post.date || post.scheduledAt || Date.now()).toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric' });
+        const author = document.createElement('span'); author.textContent = post.author || 'KDH Advocates LLP';
+        const read = document.createElement('span'); read.textContent = `${readingMinutes(post.content)} min read`;
+        meta.append(date, author, read); header.append(kicker, title); if (post.summary) header.append(deck); header.append(meta);
 
-        const content = document.createElement("div");
-        content.className = "article-content";
-        // Rich article HTML is sanitized again in the browser before insertion.
-        content.replaceChildren(safeArticleFragment(post.content || ""));
-
-        const back = document.createElement("a");
-        back.href = "/insights";
-        back.className = "back-link";
-        back.textContent = "← Back to all insights";
-        container.append(header, content, back);
+        const bodyWrap = document.createElement('div'); bodyWrap.className = 'article-body-wrap';
+        const content = document.createElement('div'); content.className = 'article-content'; content.replaceChildren(safeArticleFragment(post.content || ''));
+        const end = document.createElement('div'); end.className = 'article-end';
+        const back = document.createElement('a'); back.href = '/insights'; back.className = 'back-link'; back.textContent = '← All insights';
+        const consult = document.createElement('a'); consult.href = '/#contact'; consult.className = 'article-consult'; consult.innerHTML = 'Discuss this with our team <span aria-hidden="true">↗</span>';
+        end.append(back, consult); bodyWrap.append(content, end); container.replaceChildren(header, bodyWrap);
+        requestAnimationFrame(updateProgress);
       } catch {
-        container.innerHTML = "<h2>Unable to load article.</h2>";
+        container.innerHTML = '<header class="article-header"><div class="article-kicker">KDH Insights</div><h1>Unable to load article.</h1><p class="article-deck">Please return to Insights and try again.</p></header>';
       }
     }
     loadArticle();
   </script>
 </body>
 </html>
-

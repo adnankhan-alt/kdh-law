@@ -1,20 +1,34 @@
-KDH LIVE EDITOR CLEANUP
+KDH SEO + LINKEDIN UPGRADE
 
-Replace exactly these five files in GitHub:
+Replace/upload these files in the same paths in GitHub:
 
-/admin/index.html
-/admin/admin.css
-/admin/admin.js
-/index.html
-/script.js
+ROOT
+- index.html
+- insights.html
+- article.html
+- script.js
+- styles.css
+- vercel.json
+- robots.txt
 
-What this fix does:
-- removes the permanent "Editing mode" banner
-- removes the startup "Homepage editor / No GitHub write token" banner
-- removes the "Live editor ready" banner
-- moves genuine save/error notices to a small temporary bottom-right toast
-- fixes the visual editor text-wrapper CSS collision that squashed the hero eyebrow text into a narrow vertical column
-- cache-busts the updated admin and homepage JavaScript
+admin/
+- posts-manager.js
 
-Do not upload the outer kdh-clean-live-editor-fix folder into the repository.
-Open it and replace the files at the paths above.
+api/
+- public.js
+
+server/routes/public/
+- article.js       (NEW)
+- person.js        (NEW)
+- practice.js      (NEW)
+- sitemap.js       (REPLACE)
+
+Do not delete api/cms.js, api/github-callback.js, or api/public.js.
+This upgrade still uses only the existing consolidated Vercel public function.
+
+After deployment:
+1. Admin -> Attorneys: add each person's LinkedIn URL, optional SEO title/description, and confirm profile slug.
+2. Admin -> Practice Areas: confirm slug and optionally add SEO title/description.
+3. Save Attorneys and Save Practice Areas.
+4. New public URLs are /team/<slug>, /expertise/<slug>, and /insights/<article-slug>.
+5. Article and Insights pages include Share on LinkedIn links back to KDH.

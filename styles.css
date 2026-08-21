@@ -2691,3 +2691,35 @@ footer > * {
 
 /* Bot-trap field for the secure consultation endpoint; invisible to people and assistive navigation. */
 .hp-field { position: absolute !important; left: -10000px !important; width: 1px !important; height: 1px !important; overflow: hidden !important; opacity: 0 !important; pointer-events: none !important; }
+
+/* SEO detail links and LinkedIn profile links */
+.practice-page-link {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  margin-top: 1.25rem;
+  color: var(--gold);
+  font-size: .76rem;
+  font-weight: 800;
+  letter-spacing: .02em;
+}
+.team-card-actions,
+.dialog-profile-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .7rem;
+  align-items: center;
+  margin-top: .8rem;
+}
+.profile-page-link,
+.linkedin-profile-link {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  font-size: .74rem;
+  font-weight: 800;
+}
+.profile-page-link { color: var(--navy); }
+.linkedin-profile-link { color: #0a66c2; }
+.person-copy .team-card-actions .profile-page-link,
+.person-copy .team-card-actions .linkedin-profile-link { margin-top: 0; }

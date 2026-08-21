@@ -3,46 +3,117 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="Insights, news, and articles from KDH Advocates LLP.">
+  <meta name="description" content="Legal and commercial insights from KDH Advocates LLP.">
   <meta name="theme-color" content="#001759">
-  <title>Insights | KDH Advocates LLP</title>
-  <link rel="icon" type="image/png" sizes="256x256" href="assets/kdh-favicon.png">
-  <link rel="stylesheet" href="styles.css">
-  <style>
-    .insights-grid { display: grid; gap: 2rem; padding: 4rem 5%; max-width: 1200px; margin: 0 auto; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
-    .insight-card { border: 1px solid #ddd; border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; } .insight-card-body { padding: 2rem; display: flex; flex-direction: column; gap: 1rem; flex-grow: 1; } .insight-card-img { width: 100%; height: 200px; object-fit: cover; }
-    .insight-card h3 { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: #001759; }
-    .insight-card p { flex-grow: 1; }
-    .insight-card a { font-weight: 600; color: #d4af37; text-decoration: none; }
-    .insight-card a:hover { text-decoration: underline; }
-  </style>
   <meta name="robots" content="index,follow">
   <meta property="og:title" content="Insights | KDH Advocates LLP">
-  <meta property="og:description" content="Insights, news, and articles from KDH Advocates LLP.">
+  <meta property="og:description" content="Legal and commercial insights from KDH Advocates LLP.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://www.kdhadvocates.com/insights">
   <meta name="twitter:card" content="summary">
   <link rel="canonical" href="https://www.kdhadvocates.com/insights">
+  <title>Insights | KDH Advocates LLP</title>
+  <link rel="icon" type="image/png" sizes="256x256" href="assets/kdh-favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=11">
+  <style>
+    body.insights-page { background: #f7f6f2; }
+    .insights-page .site-header { position: fixed; background: rgba(255,255,255,.96); color: var(--navy); box-shadow: 0 1px 0 rgba(0,23,89,.10); backdrop-filter: blur(18px); }
+    .insights-page .site-header .brand-logo img { filter: none; }
+    .insights-page .site-header nav a.active::after { transform: scaleX(1); }
+    .insights-hero { padding: calc(var(--header-height) + clamp(4rem,8vw,8rem)) var(--section-x) clamp(4rem,7vw,7rem); background: var(--navy-deep); color: #fff; }
+    .insights-hero-inner { width: min(100%, var(--max)); margin: 0 auto; display: grid; grid-template-columns: 1.2fr .8fr; gap: clamp(2rem,6vw,7rem); align-items: end; }
+    .insights-hero .eyebrow { color: var(--gold-bright); }
+    .insights-hero h1 { max-width: 950px; margin: .6rem 0 0; color: #fff; font-family: "Playfair Display", Georgia, serif; font-size: clamp(3.5rem,7vw,7.4rem); font-weight: 500; line-height: .95; }
+    .insights-hero h1 em { color: var(--gold-bright); }
+    .insights-hero-copy { max-width: 520px; color: rgba(255,255,255,.72); font-size: clamp(1rem,1.3vw,1.15rem); }
+
+    .insights-main { width: min(calc(100% - 2 * var(--section-x)), var(--max)); margin: 0 auto; padding: clamp(3.5rem,6vw,6rem) 0 clamp(5rem,8vw,8rem); }
+    .insights-toolbar { display: flex; justify-content: space-between; align-items: end; gap: 2rem; margin-bottom: 2.2rem; padding-bottom: 1.4rem; border-bottom: 1px solid var(--line); }
+    .insights-toolbar p { margin: 0; color: var(--slate); }
+    .insights-count { color: var(--navy); font-size: .72rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+
+    .insights-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: clamp(1.2rem,2vw,2rem); }
+    .insight-card { min-width: 0; background: #fff; border: 1px solid rgba(12,23,48,.10); transition: transform .25s ease, box-shadow .25s ease; }
+    .insight-card:hover { transform: translateY(-5px); box-shadow: 0 24px 60px rgba(0,12,51,.12); }
+    .insight-card:first-child { grid-column: span 2; display: grid; grid-template-columns: 1.05fr .95fr; }
+    .insight-card-link { display: contents; color: inherit; }
+    .insight-card-media { position: relative; min-height: 260px; overflow: hidden; background: linear-gradient(135deg,var(--navy-deep),var(--navy-soft)); }
+    .insight-card:first-child .insight-card-media { min-height: 430px; }
+    .insight-card-img { width: 100%; height: 100%; min-height: inherit; object-fit: cover; transition: transform .45s ease; }
+    .insight-card:hover .insight-card-img { transform: scale(1.035); }
+    .insight-card-fallback { position: absolute; inset: 0; display: grid; place-items: center; padding: 2rem; color: rgba(255,255,255,.75); font-family: "Playfair Display", Georgia, serif; font-size: 1.4rem; text-align: center; }
+    .insight-card-body { padding: clamp(1.5rem,2.4vw,2.5rem); display: flex; flex-direction: column; min-height: 300px; }
+    .insight-card:first-child .insight-card-body { justify-content: center; min-height: 430px; }
+    .insight-card-meta { display: flex; flex-wrap: wrap; gap: .5rem 1rem; margin-bottom: 1rem; color: var(--gold); font-size: .68rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+    .insight-card h2 { margin: 0 0 1rem; color: var(--navy); font-family: "Playfair Display", Georgia, serif; font-size: clamp(1.65rem,2.2vw,2.45rem); line-height: 1.08; letter-spacing: -.035em; }
+    .insight-card:first-child h2 { font-size: clamp(2.1rem,3.1vw,3.5rem); }
+    .insight-card-summary { margin: 0 0 1.8rem; color: var(--slate); font-size: .95rem; line-height: 1.7; }
+    .insight-card-read { margin-top: auto; display: flex; justify-content: space-between; align-items: center; gap: 1rem; color: var(--navy); font-size: .76rem; font-weight: 800; }
+    .insight-card-read b { color: var(--gold); font-size: 1.15rem; transition: transform .25s ease; }
+    .insight-card:hover .insight-card-read b { transform: translate(3px,-3px); }
+    .insight-card-actions { margin-top: auto; display:flex; justify-content:space-between; align-items:center; gap:1rem; padding-top:1.2rem; border-top:1px solid var(--line); }
+    .insight-read-link { color:var(--navy); font-size:.76rem; font-weight:800; }
+    .insight-linkedin-share { color:#0a66c2; font-size:.73rem; font-weight:800; white-space:nowrap; }
+    .insights-empty { grid-column: 1/-1; padding: 4rem; background: #fff; text-align: center; color: var(--slate); }
+
+    @media (max-width: 1024px) {
+      .insights-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+      .insight-card:first-child { grid-column: 1/-1; }
+    }
+    @media (max-width: 900px) {
+      .insights-page .site-header nav { background: #fff; color: var(--navy); }
+      .insights-hero-inner { grid-template-columns: 1fr; align-items: start; }
+    }
+    @media (max-width: 680px) {
+      .insights-grid { grid-template-columns: 1fr; }
+      .insight-card:first-child { grid-column: auto; display: block; }
+      .insight-card:first-child .insight-card-media { min-height: 280px; }
+      .insight-card:first-child .insight-card-body { min-height: 0; }
+      .insights-toolbar { align-items: flex-start; flex-direction: column; gap: .5rem; }
+    }
+  </style>
 </head>
-<body>
-  <header class="site-header">
+<body class="insights-page">
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="site-header scrolled" data-header>
     <a class="brand brand-logo" href="/" aria-label="KDH Advocates home">
       <img src="assets/kdh-law-logo-transparent.png" alt="KDH Advocates LLP">
     </a>
-    <nav id="nav">
-      <a href="/">Home</a>
+    <button class="menu" type="button" aria-expanded="false" aria-controls="nav"><span>Menu</span><i aria-hidden="true"></i></button>
+    <nav id="nav" aria-label="Primary navigation">
+      <a href="/#firm">The firm</a>
+      <a href="/#expertise">Expertise</a>
+      <a href="/#reach">Africa</a>
+      <a href="/#team">Team</a>
+      <a class="active" href="/insights">Insights</a>
+      <a class="nav-cta" href="/#contact">Consultation</a>
     </nav>
   </header>
 
   <main id="main">
-    <section class="section" style="padding-top: 8rem; text-align: center;">
-      <h1 style="font-family: 'Playfair Display', serif; font-size: 3rem; color: #001759;">Insights & News</h1>
-      <p style="max-width: 600px; margin: 1rem auto; font-size: 1.1rem;">Expert legal analysis, firm news, and commercial updates from our team.</p>
+    <section class="insights-hero">
+      <div class="insights-hero-inner">
+        <div>
+          <p class="eyebrow">KDH Insights</p>
+          <h1>Legal perspective.<br><em>Commercial relevance.</em></h1>
+        </div>
+        <p class="insights-hero-copy">Analysis for businesses, directors, investors and decision-makers navigating legal risk, regulation, transactions and disputes in Kenya and across Africa.</p>
+      </div>
     </section>
 
-    <div class="insights-grid" id="insights-grid">
-      <p>Loading insights...</p>
-    </div>
+    <section class="insights-main" aria-labelledby="insights-list-title">
+      <div class="insights-toolbar">
+        <div>
+          <p class="eyebrow" id="insights-list-title">Latest publications</p>
+          <p>Strategic analysis from KDH Advocates LLP.</p>
+        </div>
+        <div class="insights-count" id="insights-count">Loading insights</div>
+      </div>
+      <div class="insights-grid" id="insights-grid" aria-live="polite"></div>
+    </section>
   </main>
 
   <footer>
@@ -53,51 +124,56 @@
   </footer>
 
   <script>
+    const menu = document.querySelector('.menu');
+    const nav = document.querySelector('#nav');
+    menu?.addEventListener('click', () => {
+      const open = menu.getAttribute('aria-expanded') === 'true';
+      menu.setAttribute('aria-expanded', String(!open));
+      nav?.classList.toggle('open', !open);
+    });
+    nav?.querySelectorAll('a').forEach((link) => link.addEventListener('click', () => { nav.classList.remove('open'); menu?.setAttribute('aria-expanded','false'); }));
+
     async function loadInsights() {
-      const grid = document.getElementById("insights-grid");
+      const grid = document.getElementById('insights-grid');
+      const count = document.getElementById('insights-count');
       try {
-        const res = await fetch("/api/public?route=posts");
-        if (!res.ok) throw new Error("Unable to load posts");
+        const res = await fetch('/api/public?route=posts', { cache: 'no-store' });
+        if (!res.ok) throw new Error('Unable to load posts');
         const posts = await res.json();
         grid.replaceChildren();
+        count.textContent = `${posts.length} ${posts.length === 1 ? 'publication' : 'publications'}`;
         if (!posts.length) {
-          const empty = document.createElement("p");
-          empty.textContent = "No insights published yet.";
-          grid.appendChild(empty);
-          return;
+          const empty = document.createElement('div'); empty.className = 'insights-empty'; empty.textContent = 'No insights published yet.'; grid.appendChild(empty); return;
         }
-
         posts.forEach((post) => {
-          const article = document.createElement("article");
-          article.className = "insight-card";
+          const article = document.createElement('article'); article.className = 'insight-card';
+          const articleUrl = `/insights/${encodeURIComponent(post.slug)}`;
+          const absoluteUrl = `https://www.kdhadvocates.com/insights/${encodeURIComponent(post.slug)}`;
+          const mediaLink = document.createElement('a'); mediaLink.href = articleUrl; mediaLink.className = 'insight-card-media'; mediaLink.setAttribute('aria-label', `Read ${post.title || 'article'}`);
           if (post.coverImage) {
-            const image = document.createElement("img");
-            image.src = post.coverImage;
-            image.className = "insight-card-img";
-            image.alt = post.title || "KDH Advocates article";
-            article.appendChild(image);
+            const image = document.createElement('img'); image.src = post.coverImage; image.className = 'insight-card-img'; image.alt = post.title || 'KDH Advocates insight'; image.loading = 'lazy'; mediaLink.appendChild(image);
+          } else {
+            const fallback = document.createElement('div'); fallback.className = 'insight-card-fallback'; fallback.textContent = 'KDH Advocates LLP'; mediaLink.appendChild(fallback);
           }
-          const body = document.createElement("div");
-          body.className = "insight-card-body";
-          const date = document.createElement("small");
-          date.textContent = new Date(post.date || post.scheduledAt || Date.now()).toLocaleDateString();
-          const title = document.createElement("h3");
-          title.textContent = post.title || "Insight";
-          const summary = document.createElement("p");
-          summary.textContent = post.summary || "";
-          const link = document.createElement("a");
-          link.href = `/article?slug=${encodeURIComponent(post.slug)}`;
-          link.textContent = "Read article →";
-          body.append(date, title, summary, link);
-          article.appendChild(body);
-          grid.appendChild(article);
+          const body = document.createElement('div'); body.className = 'insight-card-body';
+          const meta = document.createElement('div'); meta.className = 'insight-card-meta';
+          const date = document.createElement('span'); date.textContent = new Date(post.date || post.scheduledAt || Date.now()).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
+          const author = document.createElement('span'); author.textContent = post.author || 'KDH Advocates LLP'; meta.append(date, author);
+          const titleLink = document.createElement('a'); titleLink.href = articleUrl;
+          const title = document.createElement('h2'); title.textContent = post.title || 'Insight'; titleLink.appendChild(title);
+          const summary = document.createElement('p'); summary.className = 'insight-card-summary'; summary.textContent = post.summary || '';
+          const actions = document.createElement('div'); actions.className = 'insight-card-actions';
+          const read = document.createElement('a'); read.className = 'insight-read-link'; read.href = articleUrl; read.innerHTML = 'Read insight <span aria-hidden="true">↗</span>';
+          const linkedin = document.createElement('a'); linkedin.className = 'insight-linkedin-share'; linkedin.href = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(absoluteUrl)}`; linkedin.target = '_blank'; linkedin.rel = 'noopener noreferrer'; linkedin.textContent = 'Share on LinkedIn';
+          actions.append(read, linkedin);
+          body.append(meta, titleLink); if (post.summary) body.append(summary); body.append(actions); article.append(mediaLink, body); grid.append(article);
         });
       } catch {
-        grid.textContent = "Unable to load insights.";
+        count.textContent = 'Insights unavailable';
+        grid.innerHTML = '<div class="insights-empty">Unable to load insights right now. Please try again shortly.</div>';
       }
     }
     loadInsights();
   </script>
 </body>
 </html>
-

@@ -84,5 +84,23 @@
         }
       ]
     }
+  ],
+  "rewrites": [
+    {
+      "source": "/sitemap.xml",
+      "destination": "/api/public?route=sitemap"
+    },
+    {
+      "source": "/insights/:slug",
+      "destination": "/api/public?route=article&slug=:slug"
+    },
+    {
+      "source": "/team/:slug",
+      "destination": "/api/public?route=person&slug=:slug"
+    },
+    {
+      "source": "/expertise/:slug",
+      "destination": "/api/public?route=practice&slug=:slug"
+    }
   ]
 }

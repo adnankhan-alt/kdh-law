@@ -1,4 +1,5 @@
-const { branchName, githubHeaders, repoName } = require('../../lib/cms');
+const site = require('../../../content/site.json');
+const { branchName, repoName } = require('../../lib/cms');
 
 const ORIGIN = 'https://www.kdhadvocates.com';
 
@@ -11,8 +12,26 @@ function xmlEscape(value) {
     .replace(/'/g, '&apos;');
 }
 
-function publicPost(post) {
-  const status = post.status || 'published';
+function slugify(value) {
+  return String(value || '').toLowerCase().trim()
+    .replace(/&/g, ' and ')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+}
+
+function publicGithubHeaders() {
+  const headers = {
+    Accept: 'application/vnd.github+json',
+    'User-Agent': 'KDH-Website-Sitemap',
+    'X-GitHub-Api-Version': '2022-11-28'
+  };
+  const token = String(process.env.GITHUB_TOKEN || '').trim();
+  if (token) headers.Authorization = `Bearer ${token}`;
+  return headers;
+}
+
+function isPublic(post) {
+  const status = String(post?.status || 'published').toLowerCase();
   if (status === 'published') return true;
   if (status !== 'scheduled') return false;
   const when = Date.parse(post.scheduledAt || '');
@@ -20,21 +39,21 @@ function publicPost(post) {
 }
 
 async function publishedPosts() {
-  const token = process.env.GITHUB_TOKEN;
-  if (!token) return [];
-  const headers = githubHeaders(token);
-  const listUrl = `https://api.github.com/repos/${repoName()}/contents/content/posts?ref=${encodeURIComponent(branchName())}`;
-  const listResponse = await fetch(listUrl, { headers });
+  const base = `https://api.github.com/repos/${repoName()}/contents/content/posts`;
+  const headers = publicGithubHeaders();
+  const listResponse = await fetch(`${base}?ref=${encodeURIComponent(branchName())}`, { headers, cache: 'no-store' });
   if (listResponse.status === 404) return [];
   if (!listResponse.ok) return [];
   const files = await listResponse.json();
-  const posts = await Promise.all(files.filter((file) => file.type === 'file' && file.name.endsWith('.json')).slice(0, 200).map(async (file) => {
+  if (!Array.isArray(files)) return [];
+  const posts = await Promise.all(files.filter((file) => file?.type === 'file' && String(file.name || '').endsWith('.json')).slice(0, 200).map(async (file) => {
     try {
-      const response = await fetch(`${file.url}?ref=${encodeURIComponent(branchName())}`, { headers });
+      const url = `${base}/${encodeURIComponent(file.name)}?ref=${encodeURIComponent(branchName())}`;
+      const response = await fetch(url, { headers, cache: 'no-store' });
       if (!response.ok) return null;
       const payload = await response.json();
       const post = JSON.parse(Buffer.from(payload.content || '', 'base64').toString('utf8'));
-      return publicPost(post) ? post : null;
+      return isPublic(post) ? post : null;
     } catch {
       return null;
     }
@@ -51,17 +70,28 @@ module.exports = async function handler(req, res) {
     { loc: `${ORIGIN}/privacy` },
     { loc: `${ORIGIN}/cookies` }
   ];
+
+  for (const practice of site.practices || []) {
+    const slug = slugify(practice.slug || practice.title);
+    if (slug) urls.push({ loc: `${ORIGIN}/expertise/${slug}` });
+  }
+  for (const person of site.team || []) {
+    const slug = slugify(person.id || person.name);
+    if (slug) urls.push({ loc: `${ORIGIN}/team/${slug}` });
+  }
+
   try {
     const posts = await publishedPosts();
     for (const post of posts) {
-      if (!post.slug) continue;
+      const slug = slugify(post.slug);
+      if (!slug) continue;
       urls.push({
-        loc: `${ORIGIN}/article?slug=${encodeURIComponent(post.slug)}`,
+        loc: `${ORIGIN}/insights/${slug}`,
         lastmod: post.updatedAt || post.date || post.scheduledAt || now
       });
     }
   } catch {
-    // Static sitemap entries still remain useful if GitHub is temporarily unavailable.
+    // Static, practice and team URLs remain useful if GitHub is temporarily unavailable.
   }
 
   const body = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map((item) => {
@@ -72,6 +102,7 @@ module.exports = async function handler(req, res) {
     }
     return `  <url><loc>${xmlEscape(item.loc)}</loc>${lastmod}</url>`;
   }).join('\n')}\n</urlset>\n`;
+
   res.setHeader('Content-Type', 'application/xml; charset=utf-8');
   res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=3600');
   return res.status(200).send(body);
