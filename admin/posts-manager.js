@@ -47,6 +47,7 @@
   let editingSlug = null;
   let editingDate = null;
   let siteState = null;
+  let pAuthorSelect = null;
   let quill = null;
   let bootstrapped = false;
 
@@ -61,6 +62,56 @@
 
   function escapeAttr(value) {
     return escapeHtml(value).replace(/`/g, '&#096;');
+  }
+
+  function normaliseLinkedIn(value) {
+    const raw = String(value || '').trim();
+    if (!raw) return '';
+    return raw.replace(/^http:\/\//i, 'https://');
+  }
+
+  function ensureAuthorDropdown() {
+    if (!pAuthor) return null;
+    if (pAuthorSelect?.isConnected) return pAuthorSelect;
+
+    const select = document.createElement('select');
+    select.id = 'post-author-select';
+    select.className = pAuthor.className || '';
+    select.setAttribute('aria-label', 'Article author');
+    select.disabled = !canEdit();
+    select.addEventListener('change', () => { pAuthor.value = select.value; });
+
+    pAuthor.hidden = true;
+    pAuthor.setAttribute('aria-hidden', 'true');
+    pAuthor.tabIndex = -1;
+    pAuthor.insertAdjacentElement('afterend', select);
+    pAuthorSelect = select;
+    return select;
+  }
+
+  function populateAuthorDropdown(selectedValue = pAuthor?.value || 'KDH Advocates LLP') {
+    const select = ensureAuthorDropdown();
+    if (!select) return;
+
+    const selected = String(selectedValue || '').trim() || 'KDH Advocates LLP';
+    const team = Array.isArray(siteState?.team) ? siteState.team : [];
+    const options = [{ value: 'KDH Advocates LLP', label: 'KDH Advocates LLP (Firm)' }];
+    team.forEach((person) => {
+      const name = String(person?.name || '').trim();
+      if (!name) return;
+      const role = String(person?.role || '').trim();
+      options.push({ value: name, label: role ? `${name} — ${role}` : name });
+    });
+    if (!options.some((option) => option.value === selected)) options.push({ value: selected, label: `${selected} (existing author)` });
+
+    select.replaceChildren(...options.map(({ value, label }) => {
+      const option = document.createElement('option');
+      option.value = value;
+      option.textContent = label;
+      return option;
+    }));
+    select.value = selected;
+    pAuthor.value = select.value;
   }
 
   function canEdit() {
@@ -260,6 +311,7 @@
     delete pSlug.dataset.manual;
     pSummary.value = '';
     pAuthor.value = 'KDH Advocates LLP';
+    populateAuthorDropdown(pAuthor.value);
     pStatus.value = 'draft';
     pScheduledAt.value = '';
     scheduleField.hidden = true;
@@ -292,7 +344,8 @@
       pSlug.value = post.slug || '';
       pSlug.disabled = true;
       pSummary.value = post.summary || '';
-      pAuthor.value = post.author || '';
+      pAuthor.value = post.author || 'KDH Advocates LLP';
+      populateAuthorDropdown(pAuthor.value);
       pStatus.value = post.status || 'published';
       pScheduledAt.value = toLocalDateTime(post.scheduledAt);
       scheduleField.hidden = pStatus.value !== 'scheduled';
@@ -419,6 +472,7 @@
     try {
       const data = await api('/api/cms?route=site', { cache: 'no-store' });
       siteState = data.content || {};
+      populateAuthorDropdown(pAuthor?.value || 'KDH Advocates LLP');
       renderTeamManager();
       renderPracticeManager();
       populateSeo();
@@ -465,7 +519,7 @@
         <label>Name<input data-field="name" value="${escapeAttr(person.name)}"></label>
         <label>Role / title<input data-field="role" value="${escapeAttr(person.role)}"></label>
         <label>Profile slug <small>SEO URL</small><input data-field="slug" value="${escapeAttr(person.id || '')}" placeholder="yvonne-kinya-kiruja"></label>
-        <label>LinkedIn profile URL<input data-field="linkedin" type="url" value="${escapeAttr(person.linkedin || '')}" placeholder="https://www.linkedin.com/in/..."></label>
+        <label>LinkedIn profile URL<input data-field="linkedin" type="url" value="${escapeAttr(normaliseLinkedIn(person.linkedin || ''))}" placeholder="https://www.linkedin.com/in/..."></label>
         <label class="full">Practice focus<input data-field="specialties" value="${escapeAttr(person.specialties)}"></label>
         <label>Portrait URL<input data-field="image" value="${escapeAttr(person.image)}"></label>
         <label>Upload portrait<input class="team-image-upload" type="file" accept="image/*"></label>
@@ -488,7 +542,7 @@
         id,
         name,
         role: card.querySelector('[data-field="role"]').value.trim(),
-        linkedin: card.querySelector('[data-field="linkedin"]').value.trim(),
+        linkedin: normaliseLinkedIn(card.querySelector('[data-field="linkedin"]').value),
         specialties: card.querySelector('[data-field="specialties"]').value.trim(),
         image: card.querySelector('[data-field="image"]').value.trim(),
         alt: card.querySelector('[data-field="alt"]').value.trim(),
@@ -530,6 +584,8 @@
       if (badLinkedIn) throw new Error(`LinkedIn URL for ${badLinkedIn.name} must be a linkedin.com profile URL.`);
       setStatus('Saving attorneys…');
       await saveSitePatch({ team }, 'Attorney profiles, LinkedIn links and SEO metadata saved to GitHub.');
+      siteState = { ...(siteState || {}), team };
+      populateAuthorDropdown(pAuthor?.value || 'KDH Advocates LLP');
       $('#metric-team').textContent = String(team.length);
     } catch (error) { setStatus(error.message); }
   });
@@ -818,6 +874,7 @@
       const el = $(selector);
       if (el) el.hidden = !canEdit();
     });
+    if (pAuthorSelect) pAuthorSelect.disabled = !canEdit();
     if (!canAdmin()) {
       $('#btn-add-admin')?.setAttribute('hidden', '');
       $('#btn-save-admins')?.setAttribute('hidden', '');
