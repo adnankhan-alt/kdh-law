@@ -185,48 +185,33 @@ const landingTop = (target) => {
   );
 };
 
-let anchorScrollFrame = 0;
+const easeLanding = (target) => {
+  if (reduceMotion || typeof target?.animate !== "function") return;
 
-const easeInOutCubic = (t) =>
-  t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  const section = target.closest("section") || target;
+  const landing =
+    section.querySelector?.(".contact-inner") ||
+    section.querySelector?.(".section-heading") ||
+    section.querySelector?.(".hero-copy") ||
+    section.firstElementChild ||
+    section;
 
-const animateAnchorScroll = (top, { duration = 420, done } = {}) => {
-  window.cancelAnimationFrame(anchorScrollFrame);
+  landing.getAnimations?.().forEach((animation) => {
+    if (animation.id === "kdh-anchor-landing") animation.cancel();
+  });
 
-  if (reduceMotion || duration <= 0) {
-    window.scrollTo({ top, behavior: "auto" });
-    done?.();
-    return;
-  }
-
-  const from = window.scrollY;
-  const distance = top - from;
-  if (Math.abs(distance) < 2) {
-    window.scrollTo({ top, behavior: "auto" });
-    done?.();
-    return;
-  }
-
-  const started = performance.now();
-  root.classList.add("anchor-easing");
-
-  const step = (now) => {
-    const progress = Math.min(1, (now - started) / duration);
-    const eased = easeInOutCubic(progress);
-    window.scrollTo({ top: from + distance * eased, behavior: "auto" });
-
-    if (progress < 1) {
-      anchorScrollFrame = window.requestAnimationFrame(step);
-      return;
+  const animation = landing.animate(
+    [
+      { opacity: 0.94, transform: "translate3d(0, 7px, 0)" },
+      { opacity: 1, transform: "translate3d(0, 0, 0)" }
+    ],
+    {
+      duration: 220,
+      easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+      fill: "none"
     }
-
-    anchorScrollFrame = 0;
-    root.classList.remove("anchor-easing");
-    window.scrollTo({ top, behavior: "auto" });
-    done?.();
-  };
-
-  anchorScrollFrame = window.requestAnimationFrame(step);
+  );
+  animation.id = "kdh-anchor-landing";
 };
 
 const scrollToHash = (hash, { behavior, focus = false, historyMode = null } = {}) => {
@@ -246,16 +231,13 @@ const scrollToHash = (hash, { behavior, focus = false, historyMode = null } = {}
       window.history.replaceState(null, "", hash);
     }
 
-    const finish = () => {
-      if (focus) focusLanding(target);
-    };
+    // Deliberately avoid smooth scrolling for long in-page jumps. The page moves
+    // directly to the destination, then the destination gets a subtle ease-in.
+    window.scrollTo({ top, behavior: "auto" });
 
-    if (behavior === "auto" || reduceMotion) {
-      window.scrollTo({ top, behavior: "auto" });
-      finish();
-    } else {
-      animateAnchorScroll(top, { duration: 420, done: finish });
-    }
+    if (behavior !== "auto") easeLanding(target);
+    if (focus) focusLanding(target);
+    requestScrollSync();
   });
 
   return true;
@@ -281,7 +263,7 @@ document.querySelectorAll('a[href^="#"]').forEach((link) => {
     closeMenu();
     window.requestAnimationFrame(() => {
       scrollToHash(hash, {
-        behavior: link.classList.contains("skip") || reduceMotion ? "auto" : "smooth",
+        behavior: link.classList.contains("skip") || reduceMotion ? "auto" : "landing",
         focus: link.classList.contains("skip") || event.detail === 0,
         historyMode: "push"
       });
