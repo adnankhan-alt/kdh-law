@@ -185,35 +185,48 @@ const landingTop = (target) => {
   );
 };
 
-let anchorSettleTimer = 0;
-let anchorScrollEndHandler = null;
-const settleLanding = (target) => {
-  window.clearTimeout(anchorSettleTimer);
-  if (anchorScrollEndHandler) {
-    window.removeEventListener("scrollend", anchorScrollEndHandler);
+let anchorScrollFrame = 0;
+
+const easeInOutCubic = (t) =>
+  t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+const animateAnchorScroll = (top, { duration = 420, done } = {}) => {
+  window.cancelAnimationFrame(anchorScrollFrame);
+
+  if (reduceMotion || duration <= 0) {
+    window.scrollTo({ top, behavior: "auto" });
+    done?.();
+    return;
   }
 
-  const settle = () => {
-    anchorScrollEndHandler = null;
-    const top = landingTop(target);
-    if (Math.abs(window.scrollY - top) > 1) {
-      window.scrollTo({ top, behavior: "auto" });
+  const from = window.scrollY;
+  const distance = top - from;
+  if (Math.abs(distance) < 2) {
+    window.scrollTo({ top, behavior: "auto" });
+    done?.();
+    return;
+  }
+
+  const started = performance.now();
+  root.classList.add("anchor-easing");
+
+  const step = (now) => {
+    const progress = Math.min(1, (now - started) / duration);
+    const eased = easeInOutCubic(progress);
+    window.scrollTo({ top: from + distance * eased, behavior: "auto" });
+
+    if (progress < 1) {
+      anchorScrollFrame = window.requestAnimationFrame(step);
+      return;
     }
+
+    anchorScrollFrame = 0;
+    root.classList.remove("anchor-easing");
+    window.scrollTo({ top, behavior: "auto" });
+    done?.();
   };
 
-  if ("onscrollend" in window) {
-    anchorScrollEndHandler = () => {
-      window.clearTimeout(anchorSettleTimer);
-      settle();
-    };
-    window.addEventListener("scrollend", anchorScrollEndHandler, { once: true });
-    anchorSettleTimer = window.setTimeout(() => {
-      window.removeEventListener("scrollend", anchorScrollEndHandler);
-      settle();
-    }, 2200);
-  } else {
-    anchorSettleTimer = window.setTimeout(settle, 1100);
-  }
+  anchorScrollFrame = window.requestAnimationFrame(step);
 };
 
 const scrollToHash = (hash, { behavior, focus = false, historyMode = null } = {}) => {
@@ -225,11 +238,7 @@ const scrollToHash = (hash, { behavior, focus = false, historyMode = null } = {}
 
   window.requestAnimationFrame(() => {
     syncAnchorOffset();
-    window.scrollTo({
-      top: landingTop(target),
-      behavior: behavior || (reduceMotion ? "auto" : "smooth")
-    });
-    settleLanding(target);
+    const top = landingTop(target);
 
     if (historyMode === "push" && window.location.hash !== hash) {
       window.history.pushState(null, "", hash);
@@ -237,7 +246,16 @@ const scrollToHash = (hash, { behavior, focus = false, historyMode = null } = {}
       window.history.replaceState(null, "", hash);
     }
 
-    if (focus) focusLanding(target);
+    const finish = () => {
+      if (focus) focusLanding(target);
+    };
+
+    if (behavior === "auto" || reduceMotion) {
+      window.scrollTo({ top, behavior: "auto" });
+      finish();
+    } else {
+      animateAnchorScroll(top, { duration: 420, done: finish });
+    }
   });
 
   return true;

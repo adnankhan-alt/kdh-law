@@ -1,18 +1,41 @@
-FINAL CONSOLIDATED KDH SEO + SOCIAL + INSIGHTS UPDATE
+KDH FINAL VERIFIED SEO + SOCIAL + INSIGHTS UI
 
-Upload/replace the files in this package at the SAME paths in GitHub.
-Do not upload this outer folder itself.
+Upload/replace these files at the SAME paths in GitHub:
 
-This package consolidates:
-- Insights in the first/top navigation position
-- Hero Latest insights CTA + preserved firm-profile download
-- Wider Insights/article design
-- Team-member LinkedIn profile URLs + profile SEO fields
-- Practice-area SEO fields + dedicated search-friendly pages
-- Company LinkedIn/Facebook/X URLs in CMS SEO settings
-- Organization/Person/Service/BlogPosting structured data
-- LinkedIn/Facebook/X article share links back to KDH
-- Clean /insights/<slug>, /team/<slug>, /expertise/<slug> URLs
-- Sitemap routes for articles, team and practice pages
+ROOT
+- index.html
+- insights.html
+- article.html
+- script.js
+- styles.css
+- vercel.json
+- robots.txt
 
-No new Serverless Function is added.
+ADMIN
+- admin/posts-manager.js
+
+API
+- api/public.js
+
+SERVER ROUTES
+- server/routes/public/article.js
+- server/routes/public/person.js
+- server/routes/public/practice.js
+- server/routes/public/sitemap.js
+
+Homepage UI in this package:
+- Primary nav begins with Insights.
+- Hero contains ONLY Start a conversation + Insights.
+- Firm profile download is in the footer only.
+- Internal anchor navigation uses a short 420 ms ease; no page scroll snapping.
+
+SEO/social verified in this package:
+- Attorney LinkedIn + SEO title/description + profile slug fields in CMS.
+- Practice SEO title/description + slug fields in CMS.
+- Company LinkedIn/Facebook/X fields in CMS SEO settings.
+- Person ProfilePage, practice Service, article BlogPosting structured data.
+- Canonicals + Open Graph/Twitter metadata.
+- LinkedIn/Facebook/X article sharing links.
+- Sitemap includes insights, team profiles and practice pages.
+
+Do NOT delete any other api/ or server/ files.

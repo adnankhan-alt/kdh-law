@@ -25,7 +25,7 @@
 }
 
 html {
-  scroll-behavior: smooth;
+  scroll-behavior: auto;
   scroll-padding-top: var(--anchor-offset);
 }
 
@@ -2677,14 +2677,14 @@ footer > * {
   }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  html {
-    scroll-snap-type: y proximity;
-  }
+/* Internal navigation uses a short, controlled easing animation in script.js.
+   Scroll snapping is deliberately disabled so long jumps never feel forceful. */
+html {
+  scroll-snap-type: none;
+}
 
-  html.scroll-dragging {
-    scroll-snap-type: none;
-  }
+html.anchor-easing .reveal {
+  transition: none !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
