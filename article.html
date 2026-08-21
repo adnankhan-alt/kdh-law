@@ -3,14 +3,6 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <script>
-    (() => {
-      const slug = new URLSearchParams(location.search).get('slug');
-      if (slug && location.pathname.replace(/\/$/, '') === '/article') {
-        location.replace(`/insights/${encodeURIComponent(slug)}`);
-      }
-    })();
-  </script>
   <meta name="theme-color" content="#001759">
   <meta name="robots" content="index,follow">
   <title>Article | KDH Advocates LLP</title>
@@ -18,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=11">
+  <link rel="stylesheet" href="styles.css?v=9">
   <style>
     :root { --article-max: 1220px; --reading-max: 920px; }
     body.article-page { background: #f7f6f2; }
@@ -222,7 +214,7 @@
 
         const seoTitle = post.seoTitle || post.title;
         const seoDescription = post.seoDescription || post.summary || '';
-        const canonical = `https://www.kdhadvocates.com/insights/${encodeURIComponent(post.slug)}`;
+        const canonical = `https://www.kdhadvocates.com/article?slug=${encodeURIComponent(post.slug)}`;
         document.title = `${seoTitle} | KDH Advocates LLP`;
         if (seoDescription) setMeta('description', seoDescription);
         setProperty('og:title', seoTitle); if (seoDescription) setProperty('og:description', seoDescription);

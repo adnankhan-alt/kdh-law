@@ -17,7 +17,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=11">
+  <link rel="stylesheet" href="styles.css?v=9">
   <style>
     body.insights-page { background: #f7f6f2; }
     .insights-page .site-header { position: fixed; background: rgba(255,255,255,.96); color: var(--navy); box-shadow: 0 1px 0 rgba(0,23,89,.10); backdrop-filter: blur(18px); }
@@ -54,9 +54,6 @@
     .insight-card-read { margin-top: auto; display: flex; justify-content: space-between; align-items: center; gap: 1rem; color: var(--navy); font-size: .76rem; font-weight: 800; }
     .insight-card-read b { color: var(--gold); font-size: 1.15rem; transition: transform .25s ease; }
     .insight-card:hover .insight-card-read b { transform: translate(3px,-3px); }
-    .insight-card-actions { margin-top: auto; display:flex; justify-content:space-between; align-items:center; gap:1rem; padding-top:1.2rem; border-top:1px solid var(--line); }
-    .insight-read-link { color:var(--navy); font-size:.76rem; font-weight:800; }
-    .insight-linkedin-share { color:#0a66c2; font-size:.73rem; font-weight:800; white-space:nowrap; }
     .insights-empty { grid-column: 1/-1; padding: 4rem; background: #fff; text-align: center; color: var(--slate); }
 
     @media (max-width: 1024px) {
@@ -147,26 +144,21 @@
         }
         posts.forEach((post) => {
           const article = document.createElement('article'); article.className = 'insight-card';
-          const articleUrl = `/insights/${encodeURIComponent(post.slug)}`;
-          const absoluteUrl = `https://www.kdhadvocates.com/insights/${encodeURIComponent(post.slug)}`;
-          const mediaLink = document.createElement('a'); mediaLink.href = articleUrl; mediaLink.className = 'insight-card-media'; mediaLink.setAttribute('aria-label', `Read ${post.title || 'article'}`);
+          const link = document.createElement('a'); link.className = 'insight-card-link'; link.href = `/article?slug=${encodeURIComponent(post.slug)}`; link.setAttribute('aria-label', `Read ${post.title || 'article'}`);
+          const media = document.createElement('div'); media.className = 'insight-card-media';
           if (post.coverImage) {
-            const image = document.createElement('img'); image.src = post.coverImage; image.className = 'insight-card-img'; image.alt = post.title || 'KDH Advocates insight'; image.loading = 'lazy'; mediaLink.appendChild(image);
+            const image = document.createElement('img'); image.src = post.coverImage; image.className = 'insight-card-img'; image.alt = ''; image.loading = 'lazy'; media.appendChild(image);
           } else {
-            const fallback = document.createElement('div'); fallback.className = 'insight-card-fallback'; fallback.textContent = 'KDH Advocates LLP'; mediaLink.appendChild(fallback);
+            const fallback = document.createElement('div'); fallback.className = 'insight-card-fallback'; fallback.textContent = 'KDH Advocates LLP'; media.appendChild(fallback);
           }
           const body = document.createElement('div'); body.className = 'insight-card-body';
           const meta = document.createElement('div'); meta.className = 'insight-card-meta';
           const date = document.createElement('span'); date.textContent = new Date(post.date || post.scheduledAt || Date.now()).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
           const author = document.createElement('span'); author.textContent = post.author || 'KDH Advocates LLP'; meta.append(date, author);
-          const titleLink = document.createElement('a'); titleLink.href = articleUrl;
-          const title = document.createElement('h2'); title.textContent = post.title || 'Insight'; titleLink.appendChild(title);
+          const title = document.createElement('h2'); title.textContent = post.title || 'Insight';
           const summary = document.createElement('p'); summary.className = 'insight-card-summary'; summary.textContent = post.summary || '';
-          const actions = document.createElement('div'); actions.className = 'insight-card-actions';
-          const read = document.createElement('a'); read.className = 'insight-read-link'; read.href = articleUrl; read.innerHTML = 'Read insight <span aria-hidden="true">↗</span>';
-          const linkedin = document.createElement('a'); linkedin.className = 'insight-linkedin-share'; linkedin.href = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(absoluteUrl)}`; linkedin.target = '_blank'; linkedin.rel = 'noopener noreferrer'; linkedin.textContent = 'Share on LinkedIn';
-          actions.append(read, linkedin);
-          body.append(meta, titleLink); if (post.summary) body.append(summary); body.append(actions); article.append(mediaLink, body); grid.append(article);
+          const read = document.createElement('div'); read.className = 'insight-card-read'; read.innerHTML = '<span>Read insight</span><b aria-hidden="true">&#8599;</b>';
+          body.append(meta, title); if (post.summary) body.append(summary); body.append(read); link.append(media, body); article.append(link); grid.append(article);
         });
       } catch {
         count.textContent = 'Insights unavailable';
