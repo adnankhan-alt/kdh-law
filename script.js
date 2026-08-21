@@ -588,7 +588,7 @@ function elementKey(element) {
 
 function editableTextNodes() {
   const nodes = [];
-  const excluded = "script,style,noscript,textarea,select,option,.scroll-guide,[aria-hidden='true'],[data-structured-cms]";
+  const excluded = "script,style,noscript,textarea,select,option,.scroll-guide,[aria-hidden='true'],[data-structured-cms],[data-cms-static]";
 
   const visit = (element) => {
     if (element.matches?.(excluded)) return;
@@ -633,6 +633,7 @@ function applyVisualContent(content) {
 
   const images = content.images || {};
   document.querySelectorAll("img").forEach((image) => {
+    if (image.closest("[data-cms-static]")) return;
     const value = images[elementKey(image)];
     if (!value) return;
     if (typeof value.src === "string" && value.src) image.src = value.src;
@@ -641,6 +642,7 @@ function applyVisualContent(content) {
 
   const links = content.links || {};
   document.querySelectorAll("a[href]").forEach((link) => {
+    if (link.closest("[data-cms-static]")) return;
     const value = links[elementKey(link)];
     if (typeof value === "string" && value) link.setAttribute("href", value);
   });
@@ -694,11 +696,11 @@ function enableVisualEditor() {
   });
 
   document.querySelectorAll("img").forEach((image) => {
-    if (image.closest("[data-structured-cms]")) return;
+    if (image.closest("[data-structured-cms], [data-cms-static]")) return;
     image.dataset.visualKey = elementKey(image);
   });
   document.querySelectorAll("a[href]").forEach((link) => {
-    if (link.closest("[data-structured-cms]")) return;
+    if (link.closest("[data-structured-cms], [data-cms-static]")) return;
     link.dataset.visualKey = elementKey(link);
   });
 
