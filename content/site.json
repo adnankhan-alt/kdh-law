@@ -262,5 +262,10 @@
   "analytics": {
     "enabled": true,
     "consentRequired": true
+  },
+  "social": {
+    "linkedin": "https://www.linkedin.com/in/brancekenlaw",
+    "facebook": "",
+    "x": ""
   }
 }
